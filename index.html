@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP QC dan Tracking - Manufaktur</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Login Page */
+        .login-page {
+            display: block;
+        }
+
+        .login-page.hidden {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .scan-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .scan-button {
+            width: auto;
+            padding: 12px 16px;
+            background: #ff9500;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s ease;
+        }
+
+        .scan-button:hover {
+            background: #ff7a00;
+        }
+
+        .scan-hint {
+            color: #555;
+            font-size: 13px;
+        }
+
+        .scan-modal {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .scan-modal.hidden {
+            display: none;
+        }
+
+        .scan-modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            width: min(420px, 95%);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        .scan-modal-content h3 {
+            margin-bottom: 12px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .scan-modal-content p {
+            margin-bottom: 16px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .scan-input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .scan-modal-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .scan-error {
+            color: #c62828;
+            font-size: 13px;
+            min-height: 18px;
+            margin-top: 4px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .user-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .user-list-item {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Location Selection Page */
+        .location-page {
+            display: none;
+        }
+
+        .location-page.active {
+            display: block;
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .location-btn {
+            padding: 16px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .location-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .location-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* QC Form Page */
+        .qc-page {
+            display: none;
+        }
+
+        .qc-page.active {
+            display: block;
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .info-box-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-box-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .status-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .status-btn {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .status-btn:hover {
+            border-color: #667eea;
+        }
+
+        .status-btn.active {
+            color: white;
+            border: none;
+        }
+
+        .status-btn.active.oke {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: #333;
+        }
+
+        .status-btn.active.revisi {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #333;
+        }
+
+        .status-btn.active.reject {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .rejection-section {
+            display: none;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #fff5f5;
+            border-left: 4px solid #ff6b6b;
+            border-radius: 8px;
+        }
+
+        .rejection-section.show {
+            display: block;
+        }
+
+        .rejection-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .checkbox-label:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .checkbox-label input[type="radio"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .remarks-section {
+            margin-bottom: 25px;
+        }
+
+        .remarks-section label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .remarks-section .required {
+            color: #ff6b6b;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Success Page */
+        .success-page {
+            display: none;
+        }
+
+        .success-page.active {
+            display: block;
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        .success-message {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .success-details {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: left;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .success-details-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .success-details-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .success-details-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .navbar.hidden {
+            display: none;
+        }
+
+        .user-info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .error-message {
+            background: #ffe0e0;
+            color: #d32f2f;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Tracking Page */
+        .tracking-page {
+            display: none;
+        }
+
+        .tracking-page.active {
+            display: block;
+        }
+
+        .tracking-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .tracking-tab {
+            padding: 12px 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tracking-tab:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .tracking-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .tracking-items {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tracking-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+
+        .tracking-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tracking-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .tracking-item-id {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .tracking-item-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .tracking-item-status.oke {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .tracking-item-status.revisi {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .tracking-item-status.reject {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .tracking-item-details {
+            display: grid;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .tracking-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tracking-item-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .tracking-item-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .tracking-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .tracking-empty-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .tracking-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .tracking-stat-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .tracking-stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .tracking-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .tracking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .tracking-table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .tracking-table th,
+        .tracking-table td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .tracking-table th {
+            background: #f5f5f5;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .tracking-step-cell {
+            min-width: 160px;
+        }
+
+        .tracking-step-status {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .tracking-step-status.oke {
+            color: #2e7d32;
+        }
+
+        .tracking-step-status.revisi {
+            color: #e65100;
+        }
+
+        .tracking-step-status.reject {
+            color: #c62828;
+        }
+
+        .tracking-step-detail {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 3px;
+        }
+
+        .tracking-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .tracking-empty-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+                border-radius: 18px;
+            }
+
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .logout-btn {
+                width: 100%;
+            }
+
+            .menu-nav {
+                padding-bottom: 10px;
+            }
+
+            .menu-nav > div {
+                flex-wrap: wrap;
+                justify-content: stretch;
+            }
+
+            .menu-nav button {
+                flex: 1 1 45%;
+                min-width: 140px;
+                margin-bottom: 8px;
+            }
+
+            .tracking-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tracking-table th,
+            .tracking-table td {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .tracking-table {
+                min-width: 900px;
+            }
+
+            .tracking-table-container {
+                margin-bottom: 10px;
+            }
+
+            .info-box-item,
+            .tracking-item-row,
+            .success-details-item {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+
+            .info-box-item span,
+            .tracking-item-row span,
+            .success-details-item span {
+                width: 100%;
+            }
+
+            .header p,
+            .tracking-step-detail,
+            .tracking-stat-label {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Bar -->
+        <div class="navbar hidden" id="navbar">
+            <div class="user-info">
+                Selamat datang, <span class="user-name" id="navUsername"></span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Menu Navigation -->
+        <div class="menu-nav hidden" id="menuNav" style="display: none; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px;">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button style="padding: 10px 20px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="showQCMenu()" id="qcMenuBtn">🔍 QC Form</button>
+                <button style="padding: 10px 20px; background: white; border: 2px solid #e0e0e0; color: #333; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="showTrackingMenu()" id="trackingMenuBtn">📊 Tracking Barang</button>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div class="login-page" id="loginPage">
+            <div class="header">
+                <h1>🏭 ERP QC & Tracking</h1>
+                <p>Sistem Pengendalian Kualitas Manufaktur</p>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Masukkan Nama Anda (Username)</label>
+                <input type="text" id="username" placeholder="Ketik nama Anda..." autocomplete="off">
+                <div class="user-list">
+                    <div class="user-list-item">Arif</div>
+                    <div class="user-list-item">Istanto</div>
+                    <div class="user-list-item">Yudo</div>
+                    <div class="user-list-item">Sugeng</div>
+                    <div class="user-list-item">Liling</div>
+                    <div class="user-list-item">Nur akib</div>
+                    <div class="user-list-item">Niam</div>
+                    <div class="user-list-item">Hendro</div>
+                    <div class="user-list-item">Reza</div>
+                    <div class="user-list-item">Fatkhul</div>
+                    <div class="user-list-item">Rizal</div>
+                    <div class="user-list-item">Jamal</div>
+                    <div class="user-list-item">Wawan</div>
+                    <div class="user-list-item">Santoso</div>
+                </div>
+            </div>
+
+            <button onclick="loginUser()">Masuk ke Sistem</button>
+        </div>
+
+        <!-- Location Selection Page -->
+        <div class="location-page" id="locationPage">
+            <div class="header">
+                <h1>Pilih Lokasi Pengecekan</h1>
+                <p>Tempat Produksi</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 33.33%;"></div>
+            </div>
+
+            <div class="location-grid">
+                <button class="location-btn" onclick="selectLocation('MILLING 1 & MILLING 2')">
+                    🏭 MILLING 1 & MILLING 2
+                </button>
+                <button class="location-btn" onclick="selectLocation('ASSEMBLY')">
+                    🔧 ASSEMBLY
+                </button>
+                <button class="location-btn" onclick="selectLocation('WAREHOUSE, SEMI FINISH & INDOSPACE')">
+                    📦 WAREHOUSE, SEMI FINISH & INDOSPACE
+                </button>
+                <button class="location-btn" onclick="selectLocation('SANDING, FINISHING')">
+                    ✨ SANDING, FINISHING
+                </button>
+                <button class="location-btn" onclick="selectLocation('WEAVING')">
+                    🧵 WEAVING
+                </button>
+                <button class="location-btn" onclick="selectLocation('CUSHION & UPH')">
+                    🛋️ CUSHION & UPH
+                </button>
+                <button class="location-btn" onclick="selectLocation('PACKING & WH PACKED')">
+                    📮 PACKING & WH PACKED
+                </button>
+            </div>
+
+            <button class="btn-secondary" onclick="logout()">Kembali</button>
+        </div>
+
+        <!-- QC Form Page -->
+        <div class="qc-page" id="qcPage">
+            <div class="header">
+                <h1>Form Pengecekan QC</h1>
+                <p>Catat Status Produk</p>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 66.66%;"></div>
+            </div>
+
+            <div class="info-box">
+                <div class="info-box-item">
+                    <span class="info-label">Operator:</span>
+                    <span class="info-value" id="qcUsername"></span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">Lokasi:</span>
+                    <span class="info-value" id="qcLocation"></span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">Waktu:</span>
+                    <span class="info-value" id="qcTime"></span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">JO Number:</span>
+                    <span class="info-value" id="qcJoNumber">-</span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">Product Code:</span>
+                    <span class="info-value" id="qcProductCode">-</span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">Product Name:</span>
+                    <span class="info-value" id="qcProductName">-</span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">Total QTY:</span>
+                    <span class="info-value" id="qcTotalQty">-</span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">Qty Dicek:</span>
+                    <span class="info-value" id="qcCheckedQty">-</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="joNumber">JO Number</label>
+                <input type="text" id="joNumber" placeholder="Masukkan JO Number" oninput="updateSubmitButtonState()">
+            </div>
+            <div class="form-group">
+                <label for="productCode">Product Code</label>
+                <input type="text" id="productCode" placeholder="Masukkan Product Code" oninput="updateSubmitButtonState()">
+            </div>
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" placeholder="Masukkan Product Name" oninput="updateSubmitButtonState()">
+            </div>
+            <div class="form-group scan-group">
+                <button type="button" class="scan-button" onclick="openScanModal()">Scan QR Code</button>
+                <div class="scan-hint">Gunakan scanner QR dengan format <strong>JO Number|Product Code|Product Name|QTY Order</strong>.</div>
+            </div>
+            <div class="form-group">
+                <label for="totalQty">Total QTY</label>
+                <input type="number" id="totalQty" min="1" placeholder="Masukkan total qty item" oninput="updateSubmitButtonState()">
+            </div>
+            <div class="form-group">
+                <label for="checkedQty">Qty yang dicek</label>
+                <input type="number" id="checkedQty" min="0" placeholder="Masukkan qty yang dicek" oninput="updateSubmitButtonState()">
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <div id="scanModal" class="scan-modal hidden">
+                <div class="scan-modal-content">
+                    <h3>Scan QR Code</h3>
+                    <p>Scan atau tempel data QR dalam format <strong>JO Number|Product Code|Product Name|QTY Order</strong>.</p>
+                    <input id="scanInput" class="scan-input" type="text" placeholder="Scan atau tempel data QR di sini" onkeydown="if(event.key==='Enter'){processScanData();event.preventDefault();}">
+                    <div class="scan-modal-actions">
+                        <button type="button" onclick="processScanData()">Gunakan Data</button>
+                        <button type="button" class="btn-secondary" onclick="closeScanModal()">Batal</button>
+                    </div>
+                    <div id="scanError" class="scan-error"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Status Pengecekan</label>
+                <div class="status-buttons">
+                    <button class="status-btn" onclick="setStatus('OKE')">✅ OKE</button>
+                    <button class="status-btn" onclick="setStatus('REVISI')">⚠️ REVISI</button>
+                    <button class="status-btn" onclick="setStatus('REJECT')">❌ REJECT</button>
+                </div>
+            </div>
+
+            <div class="rejection-section" id="rejectionSection">
+                <label style="margin-bottom: 12px; font-weight: 600;">Pilih Alasan (Rejection Reason) <span style="color: #ff6b6b;">*</span></label>
+                <div class="rejection-options">
+                    <label class="checkbox-label">
+                        <input type="radio" name="rejectionReason" value="R. MATERIAL">
+                        R. MATERIAL
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="radio" name="rejectionReason" value="R. DIMENSI DAN DESAIN">
+                        R. DIMENSI DAN DESAIN
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="radio" name="rejectionReason" value="R. KONSTRUKSI DAN FUNGSIONAL">
+                        R. KONSTRUKSI DAN FUNGSIONAL
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="radio" name="rejectionReason" value="R. KERAPIAN">
+                        R. KERAPIAN
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="radio" name="rejectionReason" value="R. FINISHING">
+                        R. FINISHING
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="radio" name="rejectionReason" value="R. HARDWARE">
+                        R. HARDWARE
+                    </label>
+                </div>
+            </div>
+
+            <div class="remarks-section">
+                <label>Catatan / Remarks <span class="required">*</span></label>
+                <textarea id="remarks" placeholder="Tuliskan penjelasan detail alasan dari status yang dipilih di atas..." onkeyup="updateCharCount()"></textarea>
+                <div class="char-count"><span id="charCount">0</span> / 500 karakter</div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-secondary" onclick="goBackToLocation()">Kembali</button>
+                <button id="submitBtn" onclick="submitQC()" disabled>📤 KIRIM</button>
+            </div>
+        </div>
+
+        <!-- Success Page -->
+        <div class="success-page" id="successPage">
+            <div class="success-icon">✓</div>
+            <div class="success-message">Data Berhasil Dikirim!</div>
+            <div class="success-details">
+                <div class="success-details-item">
+                    <span class="success-details-label">Operator:</span>
+                    <span id="successUsername"></span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Lokasi:</span>
+                    <span id="successLocation"></span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Status:</span>
+                    <span id="successStatus"></span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">JO Number:</span>
+                    <span id="successJoNumber">-</span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Product Code:</span>
+                    <span id="successProductCode">-</span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Product Name:</span>
+                    <span id="successProductName">-</span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Alasan:</span>
+                    <span id="successReason">-</span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Total QTY:</span>
+                    <span id="successTotalQty">-</span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Qty Dicek:</span>
+                    <span id="successCheckedQty">-</span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Catatan:</span>
+                    <span id="successRemarks"></span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">Waktu Kirim:</span>
+                    <span id="successTime"></span>
+                </div>
+            </div>
+            <button onclick="startNewQC()">📋 Pengecekan Item Baru</button>
+        </div>
+
+        <!-- Tracking Page -->
+        <div class="tracking-page" id="trackingPage">
+            <div class="header">
+                <h1>📊 Tracking Barang</h1>
+                <p>Pantau Proses Produksi per Step</p>
+            </div>
+
+            <div class="tracking-stats" id="trackingStats">
+                <div class="tracking-stat-box">
+                    <div class="tracking-stat-label">Total Item Dicek</div>
+                    <div class="tracking-stat-value" id="totalItemsTracked">0</div>
+                </div>
+                <div class="tracking-stat-box">
+                    <div class="tracking-stat-label">OKE</div>
+                    <div class="tracking-stat-value" id="okeCount" style="color: #2e7d32;">0</div>
+                </div>
+                <div class="tracking-stat-box">
+                    <div class="tracking-stat-label">REJECT/REVISI</div>
+                    <div class="tracking-stat-value" id="rejectRevisiCount" style="color: #c62828;">0</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <button id="syncSupabaseButton" class="btn-secondary" style="width: auto; padding: 10px 18px;" onclick="syncLocalHistoryToSupabase()">Sinkronkan Lokal ke Supabase</button>
+                <div id="supabaseStatus" style="font-size: 13px; color: #666;">Supabase belum dikonfigurasi.</div>
+            </div>
+
+            <div class="tracking-table-container">
+                <table class="tracking-table">
+                    <thead>
+                        <tr>
+                            <th>JO Number</th>
+                            <th>Product Code</th>
+                            <th>Product Name</th>
+                            <th>Total QTY</th>
+                            <th>MILLING 1 &amp; MILLING 2</th>
+                            <th>ASSEMBLY</th>
+                            <th>WAREHOUSE, SEMI FINISH &amp; INDOSPACE</th>
+                            <th>SANDING, FINISHING</th>
+                            <th>WEAVING</th>
+                            <th>CUSHION &amp; UPH</th>
+                            <th>PACKING &amp; WH PACKED</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trackingTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-secondary" onclick="goBackFromTracking()">Kembali</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const VALID_USERS = ['Arif', 'Istanto', 'Yudo', 'Sugeng', 'Liling', 'Nur akib', 'Niam', 'Hendro', 'Reza', 'Fatkhul', 'Rizal', 'Jamal', 'Wawan', 'Santoso'];
+        const LOCATIONS = ['MILLING 1 & MILLING 2', 'ASSEMBLY', 'WAREHOUSE, SEMI FINISH & INDOSPACE', 'SANDING, FINISHING', 'WEAVING', 'CUSHION & UPH', 'PACKING & WH PACKED'];
+
+        // Supabase configuration
+        const SUPABASE_URL = 'https://cwuwpzfpkklwnykrhhkn.supabase.co';
+        const SUPABASE_REST_URL = 'https://cwuwpzfpkklwnykrhhkn.supabase.co/rest/v1';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3dXdwemZwa2tsd255a3JoaGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2ODIzMTcsImV4cCI6MjA5NTI1ODMxN30.0AVx_j0E1e_7T2fYhJ_C0zYeYfwOmCdvYhyDQ60aa-U';
+        const SUPABASE_TABLE = 'qc_history';
+
+        function isSupabaseConfigured() {
+            return (
+                typeof SUPABASE_URL === 'string' &&
+                SUPABASE_URL.trim() !== '' &&
+                SUPABASE_URL.includes('.supabase.co') &&
+                typeof SUPABASE_REST_URL === 'string' &&
+                SUPABASE_REST_URL.trim() !== '' &&
+                SUPABASE_REST_URL.includes('/rest/v1') &&
+                typeof SUPABASE_ANON_KEY === 'string' &&
+                SUPABASE_ANON_KEY.trim() !== '' &&
+                !SUPABASE_URL.includes('YOUR_SUPABASE_URL') &&
+                !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY')
+            );
+        }
+
+        async function saveToSupabase(qcData) {
+            if (!isSupabaseConfigured()) {
+                console.warn('Supabase belum dikonfigurasi. Lewati backup online.');
+                return false;
+            }
+
+            const payload = [{
+                username: qcData.username,
+                location: qcData.location,
+                status: qcData.status,
+                jo_number: qcData.joNumber,
+                product_code: qcData.productCode,
+                product_name: qcData.productName,
+                reason: qcData.reason,
+                total_qty: qcData.totalQty,
+                checked_qty: qcData.checkedQty,
+                remarks: qcData.remarks,
+                timestamp: qcData.timestamp,
+                created_at: new Date().toISOString()
+            }];
+
+            const response = await fetch(`${SUPABASE_REST_URL}/${SUPABASE_TABLE}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Supabase REST insert error:', response.status, errorText);
+                return false;
+            }
+            return true;
+        }
+
+        function updateSupabaseUI() {
+            const button = document.getElementById('syncSupabaseButton');
+            const status = document.getElementById('supabaseStatus');
+            if (!button || !status) return;
+
+            if (!isSupabaseConfigured()) {
+                button.disabled = true;
+                status.textContent = 'Supabase belum dikonfigurasi. Isi SUPABASE_URL + SUPABASE_ANON_KEY di index.html untuk backup online.';
+                status.style.color = '#c62828';
+                return;
+            }
+
+            button.disabled = false;
+            status.textContent = 'Supabase aktif: klik untuk sinkronisasi data lokal ke Supabase.';
+            status.style.color = '#2e7d32';
+        }
+
+        async function syncLocalHistoryToSupabase() {
+            if (!isSupabaseConfigured()) {
+                alert('Supabase belum dikonfigurasi. Silakan isi SUPABASE_URL dan SUPABASE_ANON_KEY di file index.html.');
+                return;
+            }
+
+            const stored = JSON.parse(localStorage.getItem('qcHistory') || '[]');
+            if (!stored.length) {
+                alert('Tidak ada data lokal untuk disinkronkan.');
+                return;
+            }
+
+            let successCount = 0;
+            for (const item of stored) {
+                const success = await saveToSupabase(item);
+                if (success) successCount += 1;
+            }
+
+            alert(`Sinkronisasi selesai: ${successCount} dari ${stored.length} item tersimpan di Supabase.`);
+        }
+
+        // State
+        let currentUser = null;
+        let currentLocation = null;
+        let currentStatus = null;
+        let currentTotalQty = null;
+        let currentCheckedQty = null;
+        let qcHistory = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromStorage();
+            updateSupabaseUI();
+            document.getElementById('username').focus();
+        });
+
+        // Login Functions
+        function loginUser() {
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                showError('Silakan masukkan nama Anda');
+                return;
+            }
+
+            if (!VALID_USERS.includes(username)) {
+                showError('Nama tidak terdaftar. Silakan periksa kembali!');
+                return;
+            }
+
+            currentUser = username;
+            saveToStorage();
+            showLocationPage();
+        }
+
+        function showLocationPage() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('locationPage').classList.add('active');
+            document.getElementById('navbar').classList.remove('hidden');
+            document.getElementById('menuNav').classList.remove('hidden');
+            document.getElementById('menuNav').style.display = 'block';
+            document.getElementById('navUsername').textContent = currentUser;
+        }
+
+        // Location Selection
+        function selectLocation(location) {
+            const buttons = document.querySelectorAll('.location-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.location-btn').classList.add('active');
+            
+            currentLocation = location;
+            showQCPage();
+        }
+
+        function showQCPage() {
+            document.getElementById('locationPage').classList.remove('active');
+            document.getElementById('qcPage').classList.add('active');
+            document.getElementById('qcUsername').textContent = currentUser;
+            document.getElementById('qcLocation').textContent = currentLocation;
+            document.getElementById('qcTotalQty').textContent = '-';
+            document.getElementById('qcCheckedQty').textContent = '-';
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // Reset form
+            currentStatus = null;
+            resetForm();
+        }
+
+        // QC Status Selection
+        function setStatus(status) {
+            const buttons = document.querySelectorAll('.status-btn');
+            buttons.forEach(btn => btn.classList.remove('active', 'oke', 'revisi', 'reject'));
+            
+            const selectedBtn = event.target.closest('.status-btn');
+            selectedBtn.classList.add('active');
+            
+            if (status === 'OKE') {
+                selectedBtn.classList.add('oke');
+            } else if (status === 'REVISI') {
+                selectedBtn.classList.add('revisi');
+            } else if (status === 'REJECT') {
+                selectedBtn.classList.add('reject');
+            }
+            
+            currentStatus = status;
+            
+            // Show/hide rejection reason section
+            const rejectionSection = document.getElementById('rejectionSection');
+            if (status === 'REJECT' || status === 'REVISI') {
+                rejectionSection.classList.add('show');
+            } else {
+                rejectionSection.classList.remove('show');
+                // Clear rejection reason if OKE
+                document.querySelectorAll('input[name="rejectionReason"]').forEach(r => r.checked = false);
+            }
+            
+            updateSubmitButtonState();
+        }
+
+        function openScanModal() {
+            const modal = document.getElementById('scanModal');
+            const input = document.getElementById('scanInput');
+            const error = document.getElementById('scanError');
+            if (!modal || !input || !error) return;
+            modal.classList.remove('hidden');
+            input.value = '';
+            error.textContent = '';
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closeScanModal() {
+            const modal = document.getElementById('scanModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+        }
+
+        function setScanError(message) {
+            const error = document.getElementById('scanError');
+            if (!error) return;
+            error.textContent = message;
+        }
+
+        function processScanData() {
+            const input = document.getElementById('scanInput');
+            if (!input) return;
+
+            const rawValue = input.value.trim();
+            if (!rawValue) {
+                setScanError('Silakan scan atau tempel data QR terlebih dahulu.');
+                return;
+            }
+
+            const parts = rawValue.split('|').map(p => p.trim());
+            if (parts.length !== 4) {
+                setScanError('Format tidak valid. Gunakan JO Number|Product Code|Product Name|QTY Order.');
+                return;
+            }
+
+            const [jo, productCode, productName, qtyValue] = parts;
+            const qty = Number(qtyValue);
+            if (!jo || !productCode || !productName || !qtyValue) {
+                setScanError('Semua field harus terisi dalam format QR.');
+                return;
+            }
+            if (Number.isNaN(qty) || qty <= 0) {
+                setScanError('QTY Order harus berupa angka lebih besar dari 0.');
+                return;
+            }
+
+            document.getElementById('joNumber').value = jo;
+            document.getElementById('productCode').value = productCode;
+            document.getElementById('productName').value = productName;
+            document.getElementById('totalQty').value = qty;
+            updateSubmitButtonState();
+            closeScanModal();
+        }
+
+        // Update submit button state
+        function updateSubmitButtonState() {
+            const remarks = document.getElementById('remarks').value.trim();
+            const totalQtyValue = document.getElementById('totalQty').value;
+            const checkedQtyValue = document.getElementById('checkedQty').value;
+            const joNumber = document.getElementById('joNumber').value.trim();
+            const productCode = document.getElementById('productCode').value.trim();
+            const productName = document.getElementById('productName').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+            let canSubmit = false;
+
+            const totalQty = Number(totalQtyValue);
+            const checkedQty = Number(checkedQtyValue);
+            const qtyValid = totalQty > 0 && checkedQtyValue !== '' && checkedQty >= 0 && checkedQty <= totalQty;
+
+            document.getElementById('qcTotalQty').textContent = totalQtyValue ? totalQty : '-';
+            document.getElementById('qcCheckedQty').textContent = checkedQtyValue ? checkedQty : '-';
+            document.getElementById('qcJoNumber').textContent = joNumber || '-';
+            document.getElementById('qcProductCode').textContent = productCode || '-';
+            document.getElementById('qcProductName').textContent = productName || '-';
+
+            if (currentStatus === 'OKE') {
+                canSubmit = remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0;
+            } else if (currentStatus === 'REJECT' || currentStatus === 'REVISI') {
+                const selectedReason = document.querySelector('input[name="rejectionReason"]:checked');
+                canSubmit = selectedReason && remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0;
+            }
+
+            submitBtn.disabled = !canSubmit;
+        }
+
+        // Remarks functionality
+        function updateCharCount() {
+            const remarks = document.getElementById('remarks').value;
+            const maxChars = 500;
+            document.getElementById('charCount').textContent = remarks.length;
+            
+            if (remarks.length > maxChars) {
+                document.getElementById('remarks').value = remarks.substring(0, maxChars);
+            }
+
+            updateSubmitButtonState();
+        }
+
+        // Form submission
+        async function submitQC() {
+            const remarks = document.getElementById('remarks').value.trim();
+            const totalQtyValue = document.getElementById('totalQty').value;
+            const checkedQtyValue = document.getElementById('checkedQty').value;
+            const totalQty = Number(totalQtyValue);
+            const checkedQty = Number(checkedQtyValue);
+
+            if (!totalQtyValue || totalQty <= 0) {
+                showError('Total QTY harus diisi dan lebih besar dari 0');
+                return;
+            }
+
+            if (checkedQtyValue === '' || checkedQty < 0) {
+                showError('Qty yang dicek harus diisi dan minimal 0');
+                return;
+            }
+
+            if (checkedQty > totalQty) {
+                showError('Qty yang dicek tidak boleh lebih besar dari Total QTY');
+                return;
+            }
+
+            if (!remarks) {
+                showError('Catatan/Remarks wajib diisi!');
+                return;
+            }
+
+            if (!currentStatus) {
+                showError('Silakan pilih status pengecekan!');
+                return;
+            }
+
+            if ((currentStatus === 'REJECT' || currentStatus === 'REVISI')) {
+                const selectedReason = document.querySelector('input[name="rejectionReason"]:checked');
+                if (!selectedReason) {
+                    showError('Silakan pilih alasan (Rejection Reason)!');
+                    return;
+                }
+            }
+
+            currentTotalQty = totalQty;
+            currentCheckedQty = checkedQty;
+
+            const joNumber = document.getElementById('joNumber').value.trim();
+            const productCode = document.getElementById('productCode').value.trim();
+            const productName = document.getElementById('productName').value.trim();
+
+            if (!joNumber || !productCode || !productName) {
+                showError('JO Number, Product Code, dan Product Name harus diisi.');
+                return;
+            }
+
+            // Prepare data
+            const qcData = {
+                id: Date.now(),
+                createdAt: Date.now(),
+                username: currentUser,
+                location: currentLocation,
+                status: currentStatus,
+                joNumber: joNumber,
+                productCode: productCode,
+                productName: productName,
+                reason: document.querySelector('input[name="rejectionReason"]:checked')?.value || '-',
+                totalQty: totalQty,
+                checkedQty: checkedQty,
+                remarks: remarks,
+                timestamp: new Date().toLocaleString('id-ID')
+            };
+
+            // Save to history
+            qcHistory.push(qcData);
+            saveToStorage();
+
+            // Backup online jika sudah dikonfigurasi
+            const supabaseSaved = await saveToSupabase(qcData);
+            if (!supabaseSaved && isSupabaseConfigured()) {
+                showError('Data tersimpan lokal, tapi backup Supabase gagal. Silakan cek konfigurasi Supabase.');
+                return;
+            }
+
+            // Show success page
+            showSuccessPage(qcData);
+        }
+
+        function showSuccessPage(data) {
+            document.getElementById('qcPage').classList.remove('active');
+            document.getElementById('successPage').classList.add('active');
+            
+            document.getElementById('successUsername').textContent = data.username;
+            document.getElementById('successLocation').textContent = data.location;
+            document.getElementById('successStatus').textContent = data.status;
+            document.getElementById('successJoNumber').textContent = data.joNumber || '-';
+            document.getElementById('successProductCode').textContent = data.productCode || '-';
+            document.getElementById('successProductName').textContent = data.productName || '-';
+            document.getElementById('successReason').textContent = data.reason;
+            document.getElementById('successTotalQty').textContent = data.totalQty;
+            document.getElementById('successCheckedQty').textContent = data.checkedQty;
+            document.getElementById('successRemarks').textContent = data.remarks;
+            document.getElementById('successTime').textContent = data.timestamp;
+        }
+
+        // Navigation
+        function goBackToLocation() {
+            document.getElementById('qcPage').classList.remove('active');
+            document.getElementById('locationPage').classList.add('active');
+            resetForm();
+        }
+
+        function startNewQC() {
+            document.getElementById('successPage').classList.remove('active');
+            document.getElementById('locationPage').classList.add('active');
+            resetForm();
+            
+            // Clear location selection
+            document.querySelectorAll('.location-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function logout() {
+            currentUser = null;
+            currentLocation = null;
+            currentStatus = null;
+            resetForm();
+            
+            document.getElementById('qcPage').classList.remove('active');
+            document.getElementById('locationPage').classList.remove('active');
+            document.getElementById('successPage').classList.remove('active');
+            document.getElementById('trackingPage').classList.remove('active');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('navbar').classList.add('hidden');
+            document.getElementById('menuNav').classList.add('hidden');
+            
+            document.getElementById('username').value = '';
+            document.getElementById('username').focus();
+            
+            saveToStorage();
+        }
+
+        // Tracking Functions
+        function showQCMenu() {
+            document.getElementById('locationPage').classList.add('active');
+            document.getElementById('trackingPage').classList.remove('active');
+            document.getElementById('qcMenuBtn').style.borderColor = '#667eea';
+            document.getElementById('qcMenuBtn').style.borderWidth = '2px';
+            document.getElementById('trackingMenuBtn').style.borderColor = '#e0e0e0';
+            document.getElementById('trackingMenuBtn').style.borderWidth = '2px';
+        }
+
+        function showTrackingMenu() {
+            document.getElementById('locationPage').classList.remove('active');
+            document.getElementById('trackingPage').classList.add('active');
+            document.getElementById('qcMenuBtn').style.borderColor = '#e0e0e0';
+            document.getElementById('qcMenuBtn').style.borderWidth = '2px';
+            document.getElementById('trackingMenuBtn').style.borderColor = '#667eea';
+            document.getElementById('trackingMenuBtn').style.borderWidth = '2px';
+            
+            loadTrackingData();
+        }
+
+        function loadTrackingData() {
+            const trackingTableBody = document.getElementById('trackingTableBody');
+            trackingTableBody.innerHTML = '';
+
+            const grouped = {};
+            qcHistory.forEach(item => {
+                const key = `${item.joNumber || '-'}||${item.productCode || '-'}||${item.productName || '-'}`;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        joNumber: item.joNumber || '-',
+                        productCode: item.productCode || '-',
+                        productName: item.productName || '-',
+                        totalQty: item.totalQty || '-',
+                        steps: {}
+                    };
+                }
+
+                const existing = grouped[key].steps[item.location];
+                if (!existing || item.createdAt > existing.createdAt) {
+                    grouped[key].steps[item.location] = item;
+                }
+            });
+
+            const rows = Object.values(grouped);
+            if (rows.length === 0) {
+                trackingTableBody.innerHTML = '<tr><td colspan="11" class="tracking-empty">Belum ada data QC untuk ditampilkan.</td></tr>';
+            } else {
+                rows.forEach(row => {
+                    const tr = document.createElement('tr');
+                    const cells = [
+                        row.joNumber,
+                        row.productCode,
+                        row.productName,
+                        row.totalQty
+                    ];
+
+                    const stepCells = LOCATIONS.map(location => {
+                        const step = row.steps[location];
+                        if (!step) {
+                            return '<td class="tracking-step-cell">-</td>';
+                        }
+
+                        const statusClass = step.status.toLowerCase();
+                        return `
+                            <td class="tracking-step-cell">
+                                <span class="tracking-step-status ${statusClass}">${step.status}</span>
+                                <span class="tracking-step-detail">QC: ${step.username}</span>
+                                <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
+                            </td>
+                        `;
+                    });
+
+                    tr.innerHTML = `
+                        <td>${cells[0]}</td>
+                        <td>${cells[1]}</td>
+                        <td>${cells[2]}</td>
+                        <td>${cells[3]}</td>
+                        ${stepCells.join('')}
+                    `;
+                    trackingTableBody.appendChild(tr);
+                });
+            }
+
+            updateTrackingStats();
+        }
+
+        function updateTrackingStats(data) {
+            const total = qcHistory.length;
+            const oke = qcHistory.filter(item => item.status === 'OKE').length;
+            const rejectRevisi = qcHistory.filter(item => item.status === 'REJECT' || item.status === 'REVISI').length;
+            
+            document.getElementById('totalItemsTracked').textContent = total;
+            document.getElementById('okeCount').textContent = oke;
+            document.getElementById('rejectRevisiCount').textContent = rejectRevisi;
+        }
+
+        function goBackFromTracking() {
+            document.getElementById('trackingPage').classList.remove('active');
+            document.getElementById('locationPage').classList.add('active');
+            document.getElementById('qcMenuBtn').style.borderColor = '#667eea';
+            document.getElementById('trackingMenuBtn').style.borderColor = '#e0e0e0';
+        }
+
+        // Helper Functions
+        function resetForm() {
+            document.getElementById('remarks').value = '';
+            document.getElementById('charCount').textContent = '0';
+            document.getElementById('totalQty').value = '';
+            document.getElementById('checkedQty').value = '';
+            document.getElementById('joNumber').value = '';
+            document.getElementById('productCode').value = '';
+            document.getElementById('productName').value = '';
+            document.getElementById('qcTotalQty').textContent = '-';
+            document.getElementById('qcCheckedQty').textContent = '-';
+            document.getElementById('qcJoNumber').textContent = '-';
+            document.getElementById('qcProductCode').textContent = '-';
+            document.getElementById('qcProductName').textContent = '-';
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active', 'oke', 'revisi', 'reject'));
+            document.querySelectorAll('input[name="rejectionReason"]').forEach(r => r.checked = false);
+            document.getElementById('rejectionSection').classList.remove('show');
+            
+            currentStatus = null;
+            currentTotalQty = null;
+            currentCheckedQty = null;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('id-ID', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const timeElement = document.getElementById('qcTime');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+                setTimeout(() => {
+                    errorElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Storage Functions
+        function saveToStorage() {
+            localStorage.setItem('qcHistory', JSON.stringify(qcHistory));
+            localStorage.setItem('currentUser', currentUser || '');
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('qcHistory');
+            if (saved) {
+                try {
+                    qcHistory = JSON.parse(saved);
+                } catch (e) {
+                    qcHistory = [];
+                }
+            }
+
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser && VALID_USERS.includes(savedUser)) {
+                currentUser = savedUser;
+                showLocationPage();
+            }
+        }
+    </script>
+</body>
+</html>
