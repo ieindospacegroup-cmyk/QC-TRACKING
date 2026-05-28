@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERP QC dan Tracking - Manufaktur</title>
     <style>
         * {
@@ -25,9 +25,10 @@
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            max-width: 600px;
-            width: 100%;
+            max-width: 1200px;
+            width: 95%;
             padding: 40px;
+            margin: 0 auto;
         }
 
         .header {
@@ -713,16 +714,28 @@
 
         .tracking-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin-bottom: 20px;
             background: white;
             border-radius: 10px;
-            overflow: hidden;
         }
 
         .tracking-table-container {
             overflow-x: auto;
             margin-bottom: 20px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+        }
+
+        .tracking-table thead th {
+            position: sticky;
+            top: 0;
+            background: #f5f5f5;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .tracking-table th,
@@ -794,6 +807,69 @@
             margin-bottom: 10px;
         }
 
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 95%;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                max-width: 90%;
+                padding: 35px;
+            }
+
+            .tracking-table-container {
+                height: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 25px;
+                border-radius: 12px;
+                max-width: 95%;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .location-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .tracking-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tracking-table-container {
+                height: 300px;
+            }
+
+            .tracking-table th,
+            .tracking-table td {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            .tracking-step-cell {
+                min-width: 120px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 10px;
@@ -802,6 +878,7 @@
             .container {
                 padding: 20px;
                 border-radius: 18px;
+                max-width: 98%;
             }
 
             .navbar {
@@ -835,8 +912,8 @@
 
             .tracking-table th,
             .tracking-table td {
-                padding: 10px;
-                font-size: 12px;
+                padding: 8px;
+                font-size: 11px;
             }
 
             .tracking-table {
@@ -844,7 +921,12 @@
             }
 
             .tracking-table-container {
+                height: 250px;
                 margin-bottom: 10px;
+            }
+
+            .tracking-step-cell {
+                min-width: 100px;
             }
 
             .info-box-item,
@@ -864,6 +946,73 @@
             .tracking-step-detail,
             .tracking-stat-label {
                 font-size: 12px;
+            }
+
+            .scan-modal-content {
+                padding: 20px;
+            }
+
+            .rejection-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                max-width: 99%;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .tracking-table th,
+            .tracking-table td {
+                padding: 6px;
+                font-size: 10px;
+            }
+
+            .tracking-step-detail {
+                font-size: 10px;
+            }
+
+            .tracking-step-status {
+                font-size: 11px;
+            }
+
+            .tracking-table-container {
+                height: 200px;
+            }
+
+            .user-list {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-nav button {
+                flex: 1 1 100%;
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 10px;
+                max-width: 100%;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .tracking-table th,
+            .tracking-table td {
+                padding: 4px;
+                font-size: 9px;
+            }
+
+            .tracking-step-cell {
+                min-width: 80px;
             }
         }
     </style>
@@ -1728,7 +1877,7 @@
 
             const grouped = {};
             qcHistory.forEach(item => {
-                const key = `${item.joNumber || '-'}||${item.productCode || '-'}||${item.productName || '-'}`;
+                const key = `${item.joNumber || '-'}||${item.productCode || '-'}||${item.productName || '-'}||${item.totalQty || '-'}`;
                 if (!grouped[key]) {
                     grouped[key] = {
                         joNumber: item.joNumber || '-',
