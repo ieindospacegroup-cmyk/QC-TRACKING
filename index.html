@@ -763,6 +763,18 @@
             color: #c62828;
         }
 
+        .tracking-step-entry {
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .tracking-step-entry:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
         .tracking-step-detail {
             display: block;
             font-size: 12px;
@@ -1728,9 +1740,10 @@
                 }
 
                 const existing = grouped[key].steps[item.location];
-                if (!existing || item.createdAt > existing.createdAt) {
-                    grouped[key].steps[item.location] = item;
+                if (!existing) {
+                    grouped[key].steps[item.location] = [];
                 }
+                grouped[key].steps[item.location].push(item);
             });
 
             const rows = Object.values(grouped);
@@ -1747,19 +1760,26 @@
                     ];
 
                     const stepCells = LOCATIONS.map(location => {
-                        const step = row.steps[location];
-                        if (!step) {
+                        const stepList = row.steps[location];
+                        if (!stepList || !stepList.length) {
                             return '<td class="tracking-step-cell">-</td>';
                         }
 
-                        const statusClass = step.status.toLowerCase();
-                        return `
-                            <td class="tracking-step-cell">
-                                <span class="tracking-step-status ${statusClass}">${step.status}</span>
-                                <span class="tracking-step-detail">QC: ${step.username}</span>
-                                <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
-                            </td>
-                        `;
+                        const sortedSteps = stepList.slice().sort((a, b) => a.createdAt - b.createdAt);
+                        const entriesHtml = sortedSteps.map(step => {
+                            const statusClass = step.status.toLowerCase();
+                            const qtyLabel = location === 'PACKING & WH PACKED' ? 'Packed QTY' : 'Qty';
+                            return `
+                                <div class="tracking-step-entry">
+                                    <span class="tracking-step-status ${statusClass}">${step.status}</span>
+                                    <span class="tracking-step-detail">QC: ${step.username}</span>
+                                    <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
+                                    <span class="tracking-step-detail">${qtyLabel}: ${step.checkedQty || 0}</span>
+                                </div>
+                            `;
+                        }).join('');
+
+                        return `<td class="tracking-step-cell">${entriesHtml}</td>`;
                     });
 
                     tr.innerHTML = `
