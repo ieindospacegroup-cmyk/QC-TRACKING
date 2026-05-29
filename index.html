@@ -1043,24 +1043,10 @@
             </div>
 
             <div class="form-group">
-                <label for="username">Masukkan Nama Anda (Username)</label>
-                <input type="text" id="username" placeholder="Ketik nama Anda..." autocomplete="off">
-                <div class="user-list">
-                    <div class="user-list-item">Arif</div>
-                    <div class="user-list-item">Istanto</div>
-                    <div class="user-list-item">Yudo</div>
-                    <div class="user-list-item">Sugeng</div>
-                    <div class="user-list-item">Liling</div>
-                    <div class="user-list-item">Nur akib</div>
-                    <div class="user-list-item">Niam</div>
-                    <div class="user-list-item">Hendro</div>
-                    <div class="user-list-item">Reza</div>
-                    <div class="user-list-item">Fatkhul</div>
-                    <div class="user-list-item">Rizal</div>
-                    <div class="user-list-item">Jamal</div>
-                    <div class="user-list-item">Wawan</div>
-                    <div class="user-list-item">Santoso</div>
-                </div>
+                <label for="username">Pilih Nama Anda (Username)</label>
+                <select id="username">
+                    <option value="">-- Pilih Nama --</option>
+                </select>
             </div>
 
             <button onclick="loginUser()">Masuk ke Sistem</button>
@@ -1523,20 +1509,32 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadFromStorage();
             updateSupabaseUI();
-            document.getElementById('username').focus();
+            populateUsernameDropdown();
         });
+
+        function populateUsernameDropdown() {
+            const usernameSelect = document.getElementById('username');
+            if (!usernameSelect) return;
+
+            VALID_USERS.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user;
+                option.textContent = user;
+                usernameSelect.appendChild(option);
+            });
+        }
 
         // Login Functions
         function loginUser() {
             const username = document.getElementById('username').value.trim();
-            
+
             if (!username) {
-                showError('Silakan masukkan nama Anda');
+                showError('Silakan pilih nama Anda dari dropdown');
                 return;
             }
 
             if (!VALID_USERS.includes(username)) {
-                showError('Nama tidak terdaftar. Silakan periksa kembali!');
+                showError('Nama tidak valid. Silakan pilih nama dari dropdown.');
                 return;
             }
 
