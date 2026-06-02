@@ -377,22 +377,6 @@
             cursor: pointer;
         }
 
-        .remarks-section {
-            margin-bottom: 25px;
-        }
-
-        .remarks-section label {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .remarks-section .required {
-            color: #ff6b6b;
-            font-weight: 700;
-            margin-left: 5px;
-        }
-
         textarea {
             width: 100%;
             padding: 12px 15px;
@@ -1205,43 +1189,10 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Status Pengecekan</label>
-                <div class="status-buttons">
-                    <button class="status-btn" onclick="setStatus('OKE')">✅ OKE</button>
-                    <button class="status-btn" onclick="setStatus('REVISI')">⚠️ REVISI</button>
-                    <button class="status-btn" onclick="setStatus('REJECT')">❌ REJECT</button>
-                </div>
-            </div>
 
             <div class="form-group scan-group">
                 <button type="button" class="scan-button" onclick="openScanModal()">Scan QR Code</button>
                 <div class="scan-hint">Pilih status lalu scan QR. Setiap scan akan masuk ke <strong>QTY Check</strong> dan dapat ditambahkan beberapa kali.</div>
-            </div>
-
-            <div class="form-group">
-                <label for="joNumber">JO Number</label>
-                <input type="text" id="joNumber" placeholder="Masukkan JO Number" oninput="updateSubmitButtonState()">
-            </div>
-            <div class="form-group">
-                <label for="productCode">Product Code</label>
-                <input type="text" id="productCode" placeholder="Masukkan Product Code" oninput="updateSubmitButtonState()">
-            </div>
-            <div class="form-group">
-                <label for="productName">Product Name</label>
-                <input type="text" id="productName" placeholder="Masukkan Product Name" oninput="updateSubmitButtonState()">
-            </div>
-            <div class="form-group">
-                <label for="totalQty">TOTAL QTY ORDER</label>
-                <input type="number" id="totalQty" min="1" placeholder="Masukkan total qty item" oninput="updateSubmitButtonState()">
-            </div>
-            <div class="form-group">
-                <label for="serialNumber">Serial Number</label>
-                <input type="text" id="serialNumber" placeholder="Masukkan Serial Number" oninput="updateSubmitButtonState()">
-            </div>
-            <div class="form-group">
-                <label for="checkedQty">QTY Check</label>
-                <input type="number" id="checkedQty" min="0" placeholder="Masukkan qty yang dicek" oninput="updateSubmitButtonState()">
             </div>
 
             <div id="errorMessage" class="error-message" style="display: none;"></div>
@@ -1328,12 +1279,6 @@
                         R. HARDWARE
                     </label>
                 </div>
-            </div>
-
-            <div class="remarks-section">
-                <label>Catatan / Remarks <span class="required">*</span></label>
-                <textarea id="remarks" placeholder="Tuliskan penjelasan detail alasan dari status yang dipilih di atas..." onkeyup="updateCharCount()"></textarea>
-                <div class="char-count"><span id="charCount">0</span> / 500 karakter</div>
             </div>
 
             <div class="button-group">
@@ -1814,8 +1759,8 @@
                 return;
             }
 
-            // Cari item dengan JO dan Status yang sama
-            const existingItem = scanningSession.find(item => item.joNumber === jo && item.status === currentStatus);
+            // Cari item dengan JO, Product Code, dan Status yang sama
+            const existingItem = scanningSession.find(item => item.joNumber === jo && item.productCode === productCode && item.status === currentStatus);
 
             if (existingItem) {
                 // Cek double-scan: apakah Serial Number sudah ada?
@@ -1829,7 +1774,7 @@
                 existingItem.serialNumbers.push(serialNumber);
                 existingItem.checkedQty += 1;
             } else {
-                // Item baru untuk JO + Status kombinasi ini
+                // Item baru untuk kombinasi JO + Product Code + Status ini
                 scanningSession.push({
                     joNumber: jo,
                     productCode: productCode,
@@ -1968,55 +1913,66 @@
 
         // Update submit button state
         function updateSubmitButtonState() {
-            const remarks = document.getElementById('remarks').value.trim();
-            const totalQtyValue = document.getElementById('totalQty').value;
-            const checkedQtyValue = document.getElementById('checkedQty').value;
-            const joNumber = document.getElementById('joNumber').value.trim();
-            const productCode = document.getElementById('productCode').value.trim();
-            const productName = document.getElementById('productName').value.trim();
-            const serialNumber = document.getElementById('serialNumber').value.trim();
+            const totalQtyInput = document.getElementById('totalQty');
+            const checkedQtyInput = document.getElementById('checkedQty');
+            const joInput = document.getElementById('joNumber');
+            const productCodeInput = document.getElementById('productCode');
+            const productNameInput = document.getElementById('productName');
+            const serialNumberInput = document.getElementById('serialNumber');
             const submitBtn = document.getElementById('submitBtn');
             let canSubmit = false;
+
+            const totalQtyValue = totalQtyInput ? totalQtyInput.value : '';
+            const checkedQtyValue = checkedQtyInput ? checkedQtyInput.value : '';
+            const joNumber = joInput ? joInput.value.trim() : '';
+            const productCode = productCodeInput ? productCodeInput.value.trim() : '';
+            const productName = productNameInput ? productNameInput.value.trim() : '';
+            const serialNumber = serialNumberInput ? serialNumberInput.value.trim() : '';
 
             const totalQty = Number(totalQtyValue);
             const checkedQty = Number(checkedQtyValue);
             const qtyValid = totalQty > 0 && checkedQtyValue !== '' && checkedQty >= 0 && checkedQty <= totalQty;
 
-            document.getElementById('qcTotalQty').textContent = totalQtyValue ? totalQty : '-';
-            document.getElementById('qcCheckedQty').textContent = checkedQtyValue ? checkedQty : '-';
-            document.getElementById('qcSerialNumber').textContent = serialNumber || '-';
-            document.getElementById('qcJoNumber').textContent = joNumber || '-';
-            document.getElementById('qcProductCode').textContent = productCode || '-';
-            document.getElementById('qcProductName').textContent = productName || '-';
+            const qcTotalEl = document.getElementById('qcTotalQty');
+            const qcCheckedEl = document.getElementById('qcCheckedQty');
+            const qcSerialEl = document.getElementById('qcSerialNumber');
+            const qcJoEl = document.getElementById('qcJoNumber');
+            const qcProductCodeEl = document.getElementById('qcProductCode');
+            const qcProductNameEl = document.getElementById('qcProductName');
+
+            if (qcTotalEl) qcTotalEl.textContent = totalQtyValue ? totalQty : '-';
+            if (qcCheckedEl) qcCheckedEl.textContent = checkedQtyValue ? checkedQty : '-';
+            if (qcSerialEl) qcSerialEl.textContent = serialNumber || '-';
+            if (qcJoEl) qcJoEl.textContent = joNumber || '-';
+            if (qcProductCodeEl) qcProductCodeEl.textContent = productCode || '-';
+            if (qcProductNameEl) qcProductNameEl.textContent = productName || '-';
 
             if (currentStatus === 'OKE') {
                 canSubmit = qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
             } else if (currentStatus === 'REJECT' || currentStatus === 'REVISI') {
                 const selectedReason = document.querySelector('input[name="rejectionReason"]:checked');
-                canSubmit = selectedReason && remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
+                canSubmit = selectedReason && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
             }
 
-            submitBtn.disabled = !canSubmit;
-        }
-
-        // Remarks functionality
-        function updateCharCount() {
-            const remarks = document.getElementById('remarks').value;
-            const maxChars = 500;
-            document.getElementById('charCount').textContent = remarks.length;
-            
-            if (remarks.length > maxChars) {
-                document.getElementById('remarks').value = remarks.substring(0, maxChars);
-            }
-
-            updateSubmitButtonState();
+            if (submitBtn) submitBtn.disabled = !canSubmit;
         }
 
         // Form submission
         async function submitQC() {
-            const remarks = document.getElementById('remarks').value.trim();
-            const totalQtyValue = document.getElementById('totalQty').value;
-            const checkedQtyValue = document.getElementById('checkedQty').value;
+            const totalQtyInput = document.getElementById('totalQty');
+            const checkedQtyInput = document.getElementById('checkedQty');
+            const joInput = document.getElementById('joNumber');
+            const productCodeInput = document.getElementById('productCode');
+            const productNameInput = document.getElementById('productName');
+            const serialNumberInput = document.getElementById('serialNumber');
+
+            if (!totalQtyInput || !checkedQtyInput || !joInput || !productCodeInput || !productNameInput || !serialNumberInput) {
+                showError('Gunakan Scan QR Code terlebih dahulu, lalu simpan dengan tombol di modal.');
+                return;
+            }
+
+            const totalQtyValue = totalQtyInput.value;
+            const checkedQtyValue = checkedQtyInput.value;
             const totalQty = Number(totalQtyValue);
             const checkedQty = Number(checkedQtyValue);
 
@@ -2044,11 +2000,6 @@
                 const selectedReason = document.querySelector('input[name="rejectionReason"]:checked');
                 if (!selectedReason) {
                     showError('Silakan pilih alasan (Rejection Reason)!');
-                    return;
-                }
-
-                if (!remarks) {
-                    showError('Catatan/Remarks wajib diisi untuk REJECT atau REVISI!');
                     return;
                 }
             }
@@ -2085,7 +2036,7 @@
                 reason: document.querySelector('input[name="rejectionReason"]:checked')?.value || '-',
                 totalQty: totalQty,
                 checkedQty: checkedQty,
-                remarks: remarks,
+                remarks: '',
                 timestamp: new Date().toLocaleString('id-ID')
             };
 
@@ -2278,8 +2229,6 @@
 
         // Helper Functions
         function resetForm() {
-            document.getElementById('remarks').value = '';
-            document.getElementById('charCount').textContent = '0';
             document.getElementById('totalQty').value = '';
             document.getElementById('checkedQty').value = '';
             document.getElementById('joNumber').value = '';
