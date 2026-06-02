@@ -1140,6 +1140,15 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label>Status Pengecekan</label>
+                <div class="status-buttons">
+                    <button class="status-btn" onclick="setStatus('OKE')">✅ OKE</button>
+                    <button class="status-btn" onclick="setStatus('REVISI')">⚠️ REVISI</button>
+                    <button class="status-btn" onclick="setStatus('REJECT')">❌ REJECT</button>
+                </div>
+            </div>
+
             <div class="form-group scan-group">
                 <button type="button" class="scan-button" onclick="openScanModal()">Scan QR Code</button>
                 <div class="scan-hint">Pilih status lalu scan QR. Setiap scan akan masuk ke <strong>QTY Check</strong> dan dapat ditambahkan beberapa kali.</div>
@@ -1182,15 +1191,6 @@
                         <button type="button" class="btn-secondary" onclick="closeScanModal()">Batal</button>
                     </div>
                     <div id="scanError" class="scan-error"></div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Status Pengecekan</label>
-                <div class="status-buttons">
-                    <button class="status-btn" onclick="setStatus('OKE')">✅ OKE</button>
-                    <button class="status-btn" onclick="setStatus('REVISI')">⚠️ REVISI</button>
-                    <button class="status-btn" onclick="setStatus('REJECT')">❌ REJECT</button>
                 </div>
             </div>
 
@@ -1724,7 +1724,7 @@
             document.getElementById('qcProductName').textContent = productName || '-';
 
             if (currentStatus === 'OKE') {
-                canSubmit = remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
+                canSubmit = qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
             } else if (currentStatus === 'REJECT' || currentStatus === 'REVISI') {
                 const selectedReason = document.querySelector('input[name="rejectionReason"]:checked');
                 canSubmit = selectedReason && remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
@@ -1769,11 +1769,6 @@
                 return;
             }
 
-            if (!remarks) {
-                showError('Catatan/Remarks wajib diisi!');
-                return;
-            }
-
             if (!currentStatus) {
                 showError('Silakan pilih status pengecekan!');
                 return;
@@ -1783,6 +1778,11 @@
                 const selectedReason = document.querySelector('input[name="rejectionReason"]:checked');
                 if (!selectedReason) {
                     showError('Silakan pilih alasan (Rejection Reason)!');
+                    return;
+                }
+
+                if (!remarks) {
+                    showError('Catatan/Remarks wajib diisi untuk REJECT atau REVISI!');
                     return;
                 }
             }
