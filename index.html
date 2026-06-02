@@ -795,6 +795,13 @@
             margin-bottom: 3px;
         }
 
+        .scanning-table th.highlight-key,
+        .scanning-table td.highlight-key {
+            font-weight: 700;
+            color: #1a237e;
+            background: #e8eaf6;
+        }
+
         .status-badge {
             display: inline-block;
             padding: 4px 10px;
@@ -1268,12 +1275,12 @@
                             <table class="scanning-table">
                                 <thead>
                                     <tr>
-                                        <th>JO Number</th>
-                                        <th>Product Code</th>
+                                        <th class="highlight-key">JO Number</th>
+                                        <th class="highlight-key">Product Code</th>
                                         <th>Product Name</th>
-                                        <th>QTY Order</th>
                                         <th>Status</th>
                                         <th>QTY Scanned</th>
+                                        <th>QTY Order</th>
                                         <th>Serial Number</th>
                                         <th>Remarks</th>
                                         <th>Aksi</th>
@@ -1860,12 +1867,12 @@
                 const serialList = item.serialNumbers.join(', ');
 
                 tr.innerHTML = `
-                    <td>${item.joNumber}</td>
-                    <td>${item.productCode}</td>
+                    <td class="highlight-key">${item.joNumber}</td>
+                    <td class="highlight-key">${item.productCode}</td>
                     <td>${item.productName}</td>
-                    <td>${item.totalQty}</td>
                     <td><span class="status-badge ${statusClass}">${item.status}</span></td>
                     <td>${item.checkedQty}</td>
+                    <td>${item.totalQty}</td>
                     <td style="font-size: 11px; color: #666;">${serialList}</td>
                     <td>
                         <input type="text" class="remarks-input" value="${item.remarks}" 
