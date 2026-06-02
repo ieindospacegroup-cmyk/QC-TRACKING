@@ -2248,25 +2248,41 @@
 
         // Helper Functions
         function resetForm() {
-            document.getElementById('totalQty').value = '';
-            document.getElementById('checkedQty').value = '';
-            document.getElementById('joNumber').value = '';
-            document.getElementById('productCode').value = '';
-            document.getElementById('productName').value = '';
-            document.getElementById('serialNumber').value = '';
-            document.getElementById('qcTotalQty').textContent = '-';
-            document.getElementById('qcCheckedQty').textContent = '-';
-            document.getElementById('qcSerialNumber').textContent = '-';
-            document.getElementById('qcJoNumber').textContent = '-';
-            document.getElementById('qcProductCode').textContent = '-';
-            document.getElementById('qcProductName').textContent = '-';
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('errorMessage').style.display = 'none';
+            const totalQtyInput = document.getElementById('totalQty');
+            const checkedQtyInput = document.getElementById('checkedQty');
+            const joNumberInput = document.getElementById('joNumber');
+            const productCodeInput = document.getElementById('productCode');
+            const productNameInput = document.getElementById('productName');
+            const serialNumberInput = document.getElementById('serialNumber');
+            const qcTotalQtyEl = document.getElementById('qcTotalQty');
+            const qcCheckedQtyEl = document.getElementById('qcCheckedQty');
+            const qcSerialNumberEl = document.getElementById('qcSerialNumber');
+            const qcJoNumberEl = document.getElementById('qcJoNumber');
+            const qcProductCodeEl = document.getElementById('qcProductCode');
+            const qcProductNameEl = document.getElementById('qcProductName');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessageEl = document.getElementById('errorMessage');
+            const rejectionSectionEl = document.getElementById('rejectionSection');
+
+            if (totalQtyInput) totalQtyInput.value = '';
+            if (checkedQtyInput) checkedQtyInput.value = '';
+            if (joNumberInput) joNumberInput.value = '';
+            if (productCodeInput) productCodeInput.value = '';
+            if (productNameInput) productNameInput.value = '';
+            if (serialNumberInput) serialNumberInput.value = '';
+            if (qcTotalQtyEl) qcTotalQtyEl.textContent = '-';
+            if (qcCheckedQtyEl) qcCheckedQtyEl.textContent = '-';
+            if (qcSerialNumberEl) qcSerialNumberEl.textContent = '-';
+            if (qcJoNumberEl) qcJoNumberEl.textContent = '-';
+            if (qcProductCodeEl) qcProductCodeEl.textContent = '-';
+            if (qcProductNameEl) qcProductNameEl.textContent = '-';
+            if (submitBtn) submitBtn.disabled = true;
+            if (errorMessageEl) errorMessageEl.style.display = 'none';
+            if (rejectionSectionEl) rejectionSectionEl.classList.remove('show');
 
             document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active', 'oke', 'revisi', 'reject'));
             document.querySelectorAll('input[name="rejectionReason"]').forEach(r => r.checked = false);
-            document.getElementById('rejectionSection').classList.remove('show');
-            
+
             currentStatus = null;
             currentTotalQty = null;
             currentCheckedQty = null;
