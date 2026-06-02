@@ -1127,13 +1127,22 @@
                     <span class="info-value" id="qcProductName">-</span>
                 </div>
                 <div class="info-box-item">
-                    <span class="info-label">Total QTY:</span>
+                    <span class="info-label">TOTAL QTY ORDER:</span>
                     <span class="info-value" id="qcTotalQty">-</span>
                 </div>
                 <div class="info-box-item">
-                    <span class="info-label">Qty Dicek:</span>
+                    <span class="info-label">Serial Number:</span>
+                    <span class="info-value" id="qcSerialNumber">-</span>
+                </div>
+                <div class="info-box-item">
+                    <span class="info-label">QTY Check:</span>
                     <span class="info-value" id="qcCheckedQty">-</span>
                 </div>
+            </div>
+
+            <div class="form-group scan-group">
+                <button type="button" class="scan-button" onclick="openScanModal()">Scan QR Code</button>
+                <div class="scan-hint">Gunakan scanner QR dengan format <strong>JO Number|Product Code|Product Name|QTY Order|Serial Number</strong>.</div>
             </div>
 
             <div class="form-group">
@@ -1148,16 +1157,16 @@
                 <label for="productName">Product Name</label>
                 <input type="text" id="productName" placeholder="Masukkan Product Name" oninput="updateSubmitButtonState()">
             </div>
-            <div class="form-group scan-group">
-                <button type="button" class="scan-button" onclick="openScanModal()">Scan QR Code</button>
-                <div class="scan-hint">Gunakan scanner QR dengan format <strong>JO Number|Product Code|Product Name|QTY Order</strong>.</div>
-            </div>
             <div class="form-group">
-                <label for="totalQty">Total QTY</label>
+                <label for="totalQty">TOTAL QTY ORDER</label>
                 <input type="number" id="totalQty" min="1" placeholder="Masukkan total qty item" oninput="updateSubmitButtonState()">
             </div>
             <div class="form-group">
-                <label for="checkedQty">Qty yang dicek</label>
+                <label for="serialNumber">Serial Number</label>
+                <input type="text" id="serialNumber" placeholder="Masukkan Serial Number" oninput="updateSubmitButtonState()">
+            </div>
+            <div class="form-group">
+                <label for="checkedQty">QTY Check</label>
                 <input type="number" id="checkedQty" min="0" placeholder="Masukkan qty yang dicek" oninput="updateSubmitButtonState()">
             </div>
 
@@ -1166,7 +1175,7 @@
             <div id="scanModal" class="scan-modal hidden">
                 <div class="scan-modal-content">
                     <h3>Scan QR Code</h3>
-                    <p>Scan atau tempel data QR dalam format <strong>JO Number|Product Code|Product Name|QTY Order</strong>.</p>
+                    <p>Scan atau tempel data QR dalam format <strong>JO Number|Product Code|Product Name|QTY Order|Serial Number</strong>.</p>
                     <input id="scanInput" class="scan-input" type="text" placeholder="Scan atau tempel data QR di sini" onkeydown="if(event.key==='Enter'){processScanData();event.preventDefault();}">
                     <div class="scan-modal-actions">
                         <button type="button" onclick="processScanData()">Gunakan Data</button>
@@ -1261,11 +1270,15 @@
                     <span id="successReason">-</span>
                 </div>
                 <div class="success-details-item">
-                    <span class="success-details-label">Total QTY:</span>
+                    <span class="success-details-label">TOTAL QTY ORDER:</span>
                     <span id="successTotalQty">-</span>
                 </div>
                 <div class="success-details-item">
-                    <span class="success-details-label">Qty Dicek:</span>
+                    <span class="success-details-label">Serial Number:</span>
+                    <span id="successSerialNumber">-</span>
+                </div>
+                <div class="success-details-item">
+                    <span class="success-details-label">QTY Check:</span>
                     <span id="successCheckedQty">-</span>
                 </div>
                 <div class="success-details-item">
@@ -1315,7 +1328,9 @@
                             <th>JO Number</th>
                             <th>Product Code</th>
                             <th>Product Name</th>
-                            <th>Total QTY</th>
+                            <th>TOTAL QTY ORDER</th>
+                            <th>Serial Number</th>
+                            <th>QTY Check</th>
                             <th>MILLING 1 &amp; MILLING 2</th>
                             <th>ASSEMBLY</th>
                             <th>WAREHOUSE, SEMI FINISH &amp; INDOSPACE</th>
@@ -1374,6 +1389,7 @@
                 jo_number: qcData.joNumber,
                 product_code: qcData.productCode,
                 product_name: qcData.productName,
+                serial_number: qcData.serialNumber,
                 reason: qcData.reason,
                 total_qty: qcData.totalQty,
                 checked_qty: qcData.checkedQty,
@@ -1478,6 +1494,7 @@
                     joNumber: item.jo_number || '',
                     productCode: item.product_code || '',
                     productName: item.product_name || '',
+                    serialNumber: item.serial_number || '',
                     reason: item.reason || '-',
                     totalQty: item.total_qty || 0,
                     checkedQty: item.checked_qty || 0,
@@ -1642,14 +1659,14 @@
             }
 
             const parts = rawValue.split('|').map(p => p.trim());
-            if (parts.length !== 4) {
-                setScanError('Format tidak valid. Gunakan JO Number|Product Code|Product Name|QTY Order.');
+            if (parts.length !== 5) {
+                setScanError('Format tidak valid. Gunakan JO Number|Product Code|Product Name|QTY Order|Serial Number.');
                 return;
             }
 
-            const [jo, productCode, productName, qtyValue] = parts;
+            const [jo, productCode, productName, qtyValue, serialNumber] = parts;
             const qty = Number(qtyValue);
-            if (!jo || !productCode || !productName || !qtyValue) {
+            if (!jo || !productCode || !productName || !qtyValue || !serialNumber) {
                 setScanError('Semua field harus terisi dalam format QR.');
                 return;
             }
@@ -1662,6 +1679,7 @@
             document.getElementById('productCode').value = productCode;
             document.getElementById('productName').value = productName;
             document.getElementById('totalQty').value = qty;
+            document.getElementById('serialNumber').value = serialNumber;
             updateSubmitButtonState();
             closeScanModal();
         }
@@ -1674,6 +1692,7 @@
             const joNumber = document.getElementById('joNumber').value.trim();
             const productCode = document.getElementById('productCode').value.trim();
             const productName = document.getElementById('productName').value.trim();
+            const serialNumber = document.getElementById('serialNumber').value.trim();
             const submitBtn = document.getElementById('submitBtn');
             let canSubmit = false;
 
@@ -1683,15 +1702,16 @@
 
             document.getElementById('qcTotalQty').textContent = totalQtyValue ? totalQty : '-';
             document.getElementById('qcCheckedQty').textContent = checkedQtyValue ? checkedQty : '-';
+            document.getElementById('qcSerialNumber').textContent = serialNumber || '-';
             document.getElementById('qcJoNumber').textContent = joNumber || '-';
             document.getElementById('qcProductCode').textContent = productCode || '-';
             document.getElementById('qcProductName').textContent = productName || '-';
 
             if (currentStatus === 'OKE') {
-                canSubmit = remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0;
+                canSubmit = remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
             } else if (currentStatus === 'REJECT' || currentStatus === 'REVISI') {
                 const selectedReason = document.querySelector('input[name="rejectionReason"]:checked');
-                canSubmit = selectedReason && remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0;
+                canSubmit = selectedReason && remarks.length > 0 && qtyValid && joNumber.length > 0 && productCode.length > 0 && productName.length > 0 && serialNumber.length > 0;
             }
 
             submitBtn.disabled = !canSubmit;
@@ -1719,17 +1739,17 @@
             const checkedQty = Number(checkedQtyValue);
 
             if (!totalQtyValue || totalQty <= 0) {
-                showError('Total QTY harus diisi dan lebih besar dari 0');
+                showError('TOTAL QTY ORDER harus diisi dan lebih besar dari 0');
                 return;
             }
 
             if (checkedQtyValue === '' || checkedQty < 0) {
-                showError('Qty yang dicek harus diisi dan minimal 0');
+                showError('QTY Check harus diisi dan minimal 0');
                 return;
             }
 
             if (checkedQty > totalQty) {
-                showError('Qty yang dicek tidak boleh lebih besar dari Total QTY');
+                showError('QTY Check tidak boleh lebih besar dari TOTAL QTY ORDER');
                 return;
             }
 
@@ -1757,9 +1777,15 @@
             const joNumber = document.getElementById('joNumber').value.trim();
             const productCode = document.getElementById('productCode').value.trim();
             const productName = document.getElementById('productName').value.trim();
+            const serialNumber = document.getElementById('serialNumber').value.trim();
 
             if (!joNumber || !productCode || !productName) {
                 showError('JO Number, Product Code, dan Product Name harus diisi.');
+                return;
+            }
+
+            if (!serialNumber) {
+                showError('Serial Number harus diisi.');
                 return;
             }
 
@@ -1773,6 +1799,7 @@
                 joNumber: joNumber,
                 productCode: productCode,
                 productName: productName,
+                serialNumber: serialNumber,
                 reason: document.querySelector('input[name="rejectionReason"]:checked')?.value || '-',
                 totalQty: totalQty,
                 checkedQty: checkedQty,
@@ -1798,7 +1825,7 @@
         function showSuccessPage(data) {
             document.getElementById('qcPage').classList.remove('active');
             document.getElementById('successPage').classList.add('active');
-            
+
             document.getElementById('successUsername').textContent = data.username;
             document.getElementById('successLocation').textContent = data.location;
             document.getElementById('successStatus').textContent = data.status;
@@ -1808,6 +1835,7 @@
             document.getElementById('successReason').textContent = data.reason;
             document.getElementById('successTotalQty').textContent = data.totalQty;
             document.getElementById('successCheckedQty').textContent = data.checkedQty;
+            document.getElementById('successSerialNumber').textContent = data.serialNumber || '-';
             document.getElementById('successRemarks').textContent = data.remarks;
             document.getElementById('successTime').textContent = data.timestamp;
         }
@@ -1875,13 +1903,15 @@
 
             const grouped = {};
             qcHistory.forEach(item => {
-                const key = `${item.joNumber || '-'}||${item.productCode || '-'}||${item.productName || '-'}||${item.totalQty || '-'}`;
+                const key = `${item.joNumber || '-'}||${item.productCode || '-'}||${item.productName || '-'}||${item.totalQty || '-'}||${item.serialNumber || '-'}`;
                 if (!grouped[key]) {
                     grouped[key] = {
                         joNumber: item.joNumber || '-',
                         productCode: item.productCode || '-',
                         productName: item.productName || '-',
                         totalQty: item.totalQty || '-',
+                        serialNumber: item.serialNumber || '-',
+                        checkedQty: item.checkedQty || '-',
                         steps: {}
                     };
                 }
@@ -1895,7 +1925,7 @@
 
             const rows = Object.values(grouped);
             if (rows.length === 0) {
-                trackingTableBody.innerHTML = '<tr><td colspan="11" class="tracking-empty">Belum ada data QC untuk ditampilkan.</td></tr>';
+                trackingTableBody.innerHTML = '<tr><td colspan="13" class="tracking-empty">Belum ada data QC untuk ditampilkan.</td></tr>';
             } else {
                 rows.forEach(row => {
                     const tr = document.createElement('tr');
@@ -1903,7 +1933,9 @@
                         row.joNumber,
                         row.productCode,
                         row.productName,
-                        row.totalQty
+                        row.totalQty,
+                        row.serialNumber,
+                        row.checkedQty
                     ];
 
                     const stepCells = LOCATIONS.map(location => {
@@ -1934,6 +1966,8 @@
                         <td>${cells[1]}</td>
                         <td>${cells[2]}</td>
                         <td>${cells[3]}</td>
+                        <td>${cells[4]}</td>
+                        <td>${cells[5]}</td>
                         ${stepCells.join('')}
                     `;
                     trackingTableBody.appendChild(tr);
@@ -1969,14 +2003,16 @@
             document.getElementById('joNumber').value = '';
             document.getElementById('productCode').value = '';
             document.getElementById('productName').value = '';
+            document.getElementById('serialNumber').value = '';
             document.getElementById('qcTotalQty').textContent = '-';
             document.getElementById('qcCheckedQty').textContent = '-';
+            document.getElementById('qcSerialNumber').textContent = '-';
             document.getElementById('qcJoNumber').textContent = '-';
             document.getElementById('qcProductCode').textContent = '-';
             document.getElementById('qcProductName').textContent = '-';
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('errorMessage').style.display = 'none';
-            
+
             document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active', 'oke', 'revisi', 'reject'));
             document.querySelectorAll('input[name="rejectionReason"]').forEach(r => r.checked = false);
             document.getElementById('rejectionSection').classList.remove('show');
