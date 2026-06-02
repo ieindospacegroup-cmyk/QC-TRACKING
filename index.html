@@ -1142,7 +1142,7 @@
 
             <div class="form-group scan-group">
                 <button type="button" class="scan-button" onclick="openScanModal()">Scan QR Code</button>
-                <div class="scan-hint">Gunakan scanner QR dengan format <strong>JO Number|Product Code|Product Name|QTY Order|Serial Number</strong>.</div>
+                <div class="scan-hint">Pilih status lalu scan QR. Setiap scan akan masuk ke <strong>QTY Check</strong> dan dapat ditambahkan beberapa kali.</div>
             </div>
 
             <div class="form-group">
@@ -1302,15 +1302,15 @@
 
             <div class="tracking-stats" id="trackingStats">
                 <div class="tracking-stat-box">
-                    <div class="tracking-stat-label">Total Item Dicek</div>
+                    <div class="tracking-stat-label">Total Scan Qty</div>
                     <div class="tracking-stat-value" id="totalItemsTracked">0</div>
                 </div>
                 <div class="tracking-stat-box">
-                    <div class="tracking-stat-label">OKE</div>
+                    <div class="tracking-stat-label">Scan OKE Qty</div>
                     <div class="tracking-stat-value" id="okeCount" style="color: #2e7d32;">0</div>
                 </div>
                 <div class="tracking-stat-box">
-                    <div class="tracking-stat-label">REJECT/REVISI</div>
+                    <div class="tracking-stat-label">Scan REJECT/REVISI Qty</div>
                     <div class="tracking-stat-value" id="rejectRevisiCount" style="color: #c62828;">0</div>
                 </div>
             </div>
@@ -1675,11 +1675,27 @@
                 return;
             }
 
+            if (!currentStatus) {
+                setScanError('Silakan pilih status OKE / REVISI / REJECT sebelum scan QR.');
+                return;
+            }
+
+            const currentCheckedQty = Number(document.getElementById('checkedQty').value || 0);
+            const currentTotalQty = Number(document.getElementById('totalQty').value || 0);
+            const newCheckedQty = currentCheckedQty + qty;
+            const finalTotalQty = currentTotalQty > 0 ? currentTotalQty : qty;
+
+            if (currentTotalQty > 0 && newCheckedQty > currentTotalQty) {
+                setScanError('QTY Check hasil scan melebihi TOTAL QTY ORDER. Hapus atau reset form jika ingin scan item baru.');
+                return;
+            }
+
             document.getElementById('joNumber').value = jo;
             document.getElementById('productCode').value = productCode;
             document.getElementById('productName').value = productName;
-            document.getElementById('totalQty').value = qty;
+            document.getElementById('totalQty').value = finalTotalQty;
             document.getElementById('serialNumber').value = serialNumber;
+            document.getElementById('checkedQty').value = newCheckedQty;
             updateSubmitButtonState();
             closeScanModal();
         }
@@ -1978,9 +1994,9 @@
         }
 
         function updateTrackingStats(data) {
-            const total = qcHistory.length;
-            const oke = qcHistory.filter(item => item.status === 'OKE').length;
-            const rejectRevisi = qcHistory.filter(item => item.status === 'REJECT' || item.status === 'REVISI').length;
+            const total = qcHistory.reduce((sum, item) => sum + Number(item.checkedQty || 0), 0);
+            const oke = qcHistory.reduce((sum, item) => sum + (item.status === 'OKE' ? Number(item.checkedQty || 0) : 0), 0);
+            const rejectRevisi = qcHistory.reduce((sum, item) => sum + ((item.status === 'REJECT' || item.status === 'REVISI') ? Number(item.checkedQty || 0) : 0), 0);
             
             document.getElementById('totalItemsTracked').textContent = total;
             document.getElementById('okeCount').textContent = oke;
