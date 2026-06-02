@@ -795,6 +795,64 @@
             margin-bottom: 3px;
         }
 
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.oke {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.revisi {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .status-badge.reject {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .remarks-input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .scanning-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 12px;
+        }
+
+        .scanning-table th {
+            background: #f5f5f5;
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-weight: 600;
+        }
+
+        .scanning-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .scanning-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
         .tracking-empty {
             text-align: center;
             padding: 40px 20px;
@@ -1182,15 +1240,56 @@
             <div id="errorMessage" class="error-message" style="display: none;"></div>
 
             <div id="scanModal" class="scan-modal hidden">
-                <div class="scan-modal-content">
-                    <h3>Scan QR Code</h3>
-                    <p>Scan atau tempel data QR dalam format <strong>JO Number|Product Code|Product Name|QTY Order|Serial Number</strong>.</p>
-                    <input id="scanInput" class="scan-input" type="text" placeholder="Scan atau tempel data QR di sini" onkeydown="if(event.key==='Enter'){processScanData();event.preventDefault();}">
-                    <div class="scan-modal-actions">
-                        <button type="button" onclick="processScanData()">Gunakan Data</button>
-                        <button type="button" class="btn-secondary" onclick="closeScanModal()">Batal</button>
+                <div class="scan-modal-content" style="width: min(900px, 95%); max-height: 90vh; overflow-y: auto;">
+                    <h3>🔍 Scanning Mode - Pilih Status & Scan QR</h3>
+                    <p>Pilih status terlebih dahulu, kemudian scan QR Code per pcs secara berulang. Sistem akan akumulasi qty untuk JO yang sama.</p>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="margin-bottom: 8px;">Status Pengecekan:</label>
+                        <div class="status-buttons" style="margin-bottom: 12px;">
+                            <button class="status-btn" onclick="setStatusForScanning('OKE')">✅ OKE</button>
+                            <button class="status-btn" onclick="setStatusForScanning('REVISI')">⚠️ REVISI</button>
+                            <button class="status-btn" onclick="setStatusForScanning('REJECT')">❌ REJECT</button>
+                        </div>
                     </div>
-                    <div id="scanError" class="scan-error"></div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label>Scan QR Code:</label>
+                        <input id="scanInput" class="scan-input" type="text" placeholder="Scan atau tempel QR di sini..." 
+                               onkeydown="if(event.key==='Enter'){processScanData();event.preventDefault();}">
+                        <button type="button" onclick="processScanData()" style="width: auto; padding: 8px 16px; margin-top: 6px;">Proses Scan</button>
+                    </div>
+
+                    <div id="scanError" class="scan-error" style="margin-bottom: 12px;"></div>
+
+                    <div style="margin-bottom: 12px;">
+                        <h4 style="margin-bottom: 8px; font-size: 14px;">Daftar Item Ter-scan:</h4>
+                        <div class="scanning-table-container">
+                            <table class="scanning-table">
+                                <thead>
+                                    <tr>
+                                        <th>JO Number</th>
+                                        <th>Product Code</th>
+                                        <th>Product Name</th>
+                                        <th>QTY Order</th>
+                                        <th>Status</th>
+                                        <th>QTY Scanned</th>
+                                        <th>Serial Number</th>
+                                        <th>Remarks</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scanningTableBody">
+                                    <tr><td colspan="9" class="tracking-empty">Belum ada item di-scan.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="scan-modal-actions">
+                        <button type="button" onclick="submitAllScans()" style="background: #4caf50;">💾 Simpan Semua Scan</button>
+                        <button type="button" class="btn-secondary" onclick="closeScanModal()">Tutup</button>
+                    </div>
                 </div>
             </div>
 
@@ -1521,6 +1620,7 @@
         let currentTotalQty = null;
         let currentCheckedQty = null;
         let qcHistory = [];
+        let scanningSession = []; // Format: { joNumber, productCode, productName, status, totalQty, checkedQty, serialNumbers: [], remarks: '' }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -1625,6 +1725,26 @@
             updateSubmitButtonState();
         }
 
+        function setStatusForScanning(status) {
+            const buttons = document.querySelectorAll('.scan-modal-content .status-btn');
+            buttons.forEach(btn => btn.classList.remove('active', 'oke', 'revisi', 'reject'));
+            
+            const selectedBtn = event.target.closest('.status-btn');
+            selectedBtn.classList.add('active');
+            
+            if (status === 'OKE') {
+                selectedBtn.classList.add('oke');
+            } else if (status === 'REVISI') {
+                selectedBtn.classList.add('revisi');
+            } else if (status === 'REJECT') {
+                selectedBtn.classList.add('reject');
+            }
+            
+            currentStatus = status;
+            setScanError('');
+            document.getElementById('scanInput').focus();
+        }
+
         function openScanModal() {
             const modal = document.getElementById('scanModal');
             const input = document.getElementById('scanInput');
@@ -1658,46 +1778,185 @@
                 return;
             }
 
+            // Validasi status dipilih terlebih dahulu
+            if (!currentStatus) {
+                setScanError('Silakan pilih status OKE / REVISI / REJECT sebelum scan QR.');
+                input.value = '';
+                return;
+            }
+
             const parts = rawValue.split('|').map(p => p.trim());
             if (parts.length !== 5) {
                 setScanError('Format tidak valid. Gunakan JO Number|Product Code|Product Name|QTY Order|Serial Number.');
+                input.value = '';
                 return;
             }
 
             const [jo, productCode, productName, qtyValue, serialNumber] = parts;
             const qty = Number(qtyValue);
+
             if (!jo || !productCode || !productName || !qtyValue || !serialNumber) {
                 setScanError('Semua field harus terisi dalam format QR.');
+                input.value = '';
                 return;
             }
+
             if (Number.isNaN(qty) || qty <= 0) {
                 setScanError('QTY Order harus berupa angka lebih besar dari 0.');
+                input.value = '';
                 return;
             }
 
-            if (!currentStatus) {
-                setScanError('Silakan pilih status OKE / REVISI / REJECT sebelum scan QR.');
+            // Cari item dengan JO dan Status yang sama
+            const existingItem = scanningSession.find(item => item.joNumber === jo && item.status === currentStatus);
+
+            if (existingItem) {
+                // Cek double-scan: apakah Serial Number sudah ada?
+                if (existingItem.serialNumbers.includes(serialNumber)) {
+                    setScanError(`⚠️ Serial Number "${serialNumber}" sudah pernah di-scan untuk JO ini! Scan dibatalkan.`);
+                    input.value = '';
+                    return;
+                }
+
+                // Akumulasi: tambah ke item yang sudah ada
+                existingItem.serialNumbers.push(serialNumber);
+                existingItem.checkedQty += 1;
+            } else {
+                // Item baru untuk JO + Status kombinasi ini
+                scanningSession.push({
+                    joNumber: jo,
+                    productCode: productCode,
+                    productName: productName,
+                    status: currentStatus,
+                    totalQty: qty,
+                    checkedQty: 1,
+                    serialNumbers: [serialNumber],
+                    remarks: ''
+                });
+            }
+
+            // Update display
+            updateScanningTableDisplay();
+            updateScanningStats();
+            input.value = '';
+            setScanError('');
+            input.focus();
+        }
+
+        function updateScanningTableDisplay() {
+            const scanTableBody = document.getElementById('scanningTableBody');
+            if (!scanTableBody) return;
+
+            scanTableBody.innerHTML = '';
+
+            if (scanningSession.length === 0) {
+                scanTableBody.innerHTML = '<tr><td colspan="7" class="tracking-empty">Belum ada item di-scan.</td></tr>';
                 return;
             }
 
-            const currentCheckedQty = Number(document.getElementById('checkedQty').value || 0);
-            const currentTotalQty = Number(document.getElementById('totalQty').value || 0);
-            const newCheckedQty = currentCheckedQty + qty;
-            const finalTotalQty = currentTotalQty > 0 ? currentTotalQty : qty;
+            scanningSession.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                const statusClass = item.status.toLowerCase();
+                const serialList = item.serialNumbers.join(', ');
 
-            if (currentTotalQty > 0 && newCheckedQty > currentTotalQty) {
-                setScanError('QTY Check hasil scan melebihi TOTAL QTY ORDER. Hapus atau reset form jika ingin scan item baru.');
+                tr.innerHTML = `
+                    <td>${item.joNumber}</td>
+                    <td>${item.productCode}</td>
+                    <td>${item.productName}</td>
+                    <td>${item.totalQty}</td>
+                    <td><span class="status-badge ${statusClass}">${item.status}</span></td>
+                    <td>${item.checkedQty}</td>
+                    <td style="font-size: 11px; color: #666;">${serialList}</td>
+                    <td>
+                        <input type="text" class="remarks-input" value="${item.remarks}" 
+                               onchange="updateRemarks(${index}, this.value)" 
+                               placeholder="Catatan..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                    </td>
+                    <td>
+                        <button type="button" class="btn-delete" onclick="removeScannedItem(${index})" 
+                                style="padding: 4px 8px; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Hapus</button>
+                    </td>
+                `;
+                scanTableBody.appendChild(tr);
+            });
+        }
+
+        function updateRemarks(index, value) {
+            if (scanningSession[index]) {
+                scanningSession[index].remarks = value;
+            }
+        }
+
+        function removeScannedItem(index) {
+            scanningSession.splice(index, 1);
+            updateScanningTableDisplay();
+            updateScanningStats();
+        }
+
+        function updateScanningStats() {
+            const totalChecked = scanningSession.reduce((sum, item) => sum + item.checkedQty, 0);
+            const totalOke = scanningSession.filter(item => item.status === 'OKE').reduce((sum, item) => sum + item.checkedQty, 0);
+            const totalRejectRevisi = scanningSession.filter(item => item.status === 'REJECT' || item.status === 'REVISI').reduce((sum, item) => sum + item.checkedQty, 0);
+
+            const totalItemsEl = document.getElementById('totalItemsTracked');
+            const okeCountEl = document.getElementById('okeCount');
+            const rejectRevisiCountEl = document.getElementById('rejectRevisiCount');
+
+            if (totalItemsEl) totalItemsEl.textContent = totalChecked;
+            if (okeCountEl) okeCountEl.textContent = totalOke;
+            if (rejectRevisiCountEl) rejectRevisiCountEl.textContent = totalRejectRevisi;
+        }
+
+        function submitAllScans() {
+            if (scanningSession.length === 0) {
+                showError('Tidak ada item yang di-scan untuk disimpan.');
                 return;
             }
 
-            document.getElementById('joNumber').value = jo;
-            document.getElementById('productCode').value = productCode;
-            document.getElementById('productName').value = productName;
-            document.getElementById('totalQty').value = finalTotalQty;
-            document.getElementById('serialNumber').value = serialNumber;
-            document.getElementById('checkedQty').value = newCheckedQty;
-            updateSubmitButtonState();
-            closeScanModal();
+            // Validasi setiap item untuk REJECT/REVISI harus ada remarks
+            for (const item of scanningSession) {
+                if ((item.status === 'REJECT' || item.status === 'REVISI') && !item.remarks.trim()) {
+                    showError(`Item JO ${item.joNumber} dengan status ${item.status} memerlukan Remarks!`);
+                    return;
+                }
+            }
+
+            // Simpan semua item
+            scanningSession.forEach(item => {
+                const qcData = {
+                    id: Date.now() + Math.random(),
+                    createdAt: Date.now(),
+                    username: currentUser,
+                    location: currentLocation,
+                    status: item.status,
+                    joNumber: item.joNumber,
+                    productCode: item.productCode,
+                    productName: item.productName,
+                    serialNumber: item.serialNumbers.join('; '),
+                    reason: '-',
+                    totalQty: item.totalQty,
+                    checkedQty: item.checkedQty,
+                    remarks: item.remarks || '',
+                    timestamp: new Date().toLocaleString('id-ID')
+                };
+
+                qcHistory.push(qcData);
+                saveToSupabase(qcData);
+            });
+
+            saveToStorage();
+            alert(`${scanningSession.length} item berhasil disimpan!`);
+            scanningSession = [];
+            updateScanningTableDisplay();
+            updateScanningStats();
+            resetScanningForm();
+        }
+
+        function resetScanningForm() {
+            document.getElementById('scanInput').value = '';
+            document.getElementById('scanInput').focus();
+            currentStatus = null;
+            document.querySelectorAll('.status-btn').forEach(btn => btn.classList.remove('active', 'oke', 'revisi', 'reject'));
         }
 
         // Update submit button state
