@@ -1233,12 +1233,13 @@
                                         <th>QTY Scanned</th>
                                         <th>QTY Order</th>
                                         <th>Serial Number</th>
+                                        <th>Reason</th>
                                         <th>Remarks</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="scanningTableBody">
-                                    <tr><td colspan="9" class="tracking-empty">Belum ada item di-scan.</td></tr>
+                                    <tr><td colspan="10" class="tracking-empty">Belum ada item di-scan.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1783,6 +1784,7 @@
                     totalQty: qty,
                     checkedQty: 1,
                     serialNumbers: [serialNumber],
+                    reason: '-',
                     remarks: ''
                 });
             }
@@ -1802,7 +1804,7 @@
             scanTableBody.innerHTML = '';
 
             if (scanningSession.length === 0) {
-                scanTableBody.innerHTML = '<tr><td colspan="7" class="tracking-empty">Belum ada item di-scan.</td></tr>';
+                scanTableBody.innerHTML = '<tr><td colspan="10" class="tracking-empty">Belum ada item di-scan.</td></tr>';
                 return;
             }
 
@@ -1820,6 +1822,17 @@
                     <td>${item.totalQty}</td>
                     <td style="font-size: 11px; color: #666;">${serialList}</td>
                     <td>
+                        <select class="reason-select" onchange="updateReason(${index}, this.value)" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="-" ${item.reason === '-' ? 'selected' : ''}>-</option>
+                            <option value="R. MATERIAL" ${item.reason === 'R. MATERIAL' ? 'selected' : ''}>R. MATERIAL</option>
+                            <option value="R. DIMENSI DAN DESAIN" ${item.reason === 'R. DIMENSI DAN DESAIN' ? 'selected' : ''}>R. DIMENSI DAN DESAIN</option>
+                            <option value="R. KONSTRUKSI DAN FUNGSIONAL" ${item.reason === 'R. KONSTRUKSI DAN FUNGSIONAL' ? 'selected' : ''}>R. KONSTRUKSI DAN FUNGSIONAL</option>
+                            <option value="R. KERAPIAN" ${item.reason === 'R. KERAPIAN' ? 'selected' : ''}>R. KERAPIAN</option>
+                            <option value="R. FINISHING" ${item.reason === 'R. FINISHING' ? 'selected' : ''}>R. FINISHING</option>
+                            <option value="R. HARDWARE" ${item.reason === 'R. HARDWARE' ? 'selected' : ''}>R. HARDWARE</option>
+                        </select>
+                    </td>
+                    <td>
                         <input type="text" class="remarks-input" value="${item.remarks}" 
                                onchange="updateRemarks(${index}, this.value)" 
                                placeholder="Catatan..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
@@ -1836,6 +1849,12 @@
         function updateRemarks(index, value) {
             if (scanningSession[index]) {
                 scanningSession[index].remarks = value;
+            }
+        }
+
+        function updateReason(index, value) {
+            if (scanningSession[index]) {
+                scanningSession[index].reason = value;
             }
         }
 
