@@ -1904,7 +1904,7 @@
                     productCode: item.productCode,
                     productName: item.productName,
                     serialNumber: item.serialNumbers.join('; '),
-                    reason: '-',
+                    reason: item.reason || '-',
                     totalQty: item.totalQty,
                     checkedQty: item.checkedQty,
                     remarks: item.remarks || '',
