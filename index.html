@@ -790,6 +790,16 @@
             margin-bottom: 3px;
         }
 
+        .tracking-search input:focus {
+            outline: none;
+            background: #f9f9f9;
+        }
+
+        .tracking-search:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.08);
+        }
+
         .scanning-table th.highlight-key,
         .scanning-table td.highlight-key {
             font-weight: 700;
@@ -1378,10 +1388,10 @@
                 </div>
             </div>
 
-            <div class="tracking-search" style="margin-top: 15px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center;">
+            <div class="tracking-search" style="margin-top: 15px; margin-bottom: 15px; display: flex; gap: 0; align-items: center; width: 100%; border: 1px solid #ddd; border-radius: 6px; background: white;">
+                <span style="padding: 10px 14px; font-size: 16px; color: #999;">🔍</span>
                 <input id="trackingSearchInput" type="text" placeholder="Cari JO Number / Product Code / Product Name..." 
-                       style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" />
-                <button id="trackingSearchBtn" class="btn-secondary" style="padding: 10px 16px; background: #667eea; color: white; border: none;">🔍 Cari</button>
+                       style="flex: 1; padding: 10px 12px; border: none; border-radius: 0; font-size: 14px; outline: none;" />
             </div>
 
             <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -1606,18 +1616,11 @@
             
             // Attach tracking search handlers
             const trackingInput = document.getElementById('trackingSearchInput');
-            const searchBtn = document.getElementById('trackingSearchBtn');
             if (trackingInput) {
                 trackingInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
                         applyTrackingFilter(this.value);
                     }
-                });
-            }
-            if (searchBtn && trackingInput) {
-                searchBtn.addEventListener('click', function() {
-                    applyTrackingFilter(trackingInput.value);
-                    trackingInput.focus();
                 });
             }
         });
