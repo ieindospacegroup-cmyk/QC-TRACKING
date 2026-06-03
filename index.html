@@ -1461,23 +1461,29 @@
                 created_at: new Date().toISOString()
             }];
 
-            const response = await fetch(`${SUPABASE_REST_URL}/${SUPABASE_TABLE}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                    'Prefer': 'return=minimal'
-                },
-                body: JSON.stringify(payload)
-            });
+            try {
+                const response = await fetch(`${SUPABASE_REST_URL}/${SUPABASE_TABLE}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(payload)
+                });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Supabase REST insert error:', response.status, errorText);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Supabase REST insert error:', response.status, errorText);
+                    return false;
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Supabase REST insert exception:', error);
                 return false;
             }
-            return true;
         }
 
         function updateSupabaseUI() {
@@ -1904,7 +1910,7 @@
             if (rejectRevisiCountEl) rejectRevisiCountEl.textContent = totalRejectRevisi;
         }
 
-        function submitAllScans() {
+        async function submitAllScans() {
             if (scanningSession.length === 0) {
                 showError('Tidak ada item yang di-scan untuk disimpan.');
                 return;
@@ -1918,8 +1924,12 @@
                 }
             }
 
+            let backupSuccessCount = 0;
+            let backupFailCount = 0;
+            const itemsToSave = [];
+
             // Simpan semua item
-            scanningSession.forEach(item => {
+            for (const item of scanningSession) {
                 const qcData = {
                     id: Date.now() + Math.random(),
                     createdAt: Date.now(),
@@ -1938,11 +1948,29 @@
                 };
 
                 qcHistory.push(qcData);
-                saveToSupabase(qcData);
-            });
+                itemsToSave.push(qcData);
+            }
 
             saveToStorage();
-            alert(`${scanningSession.length} item berhasil disimpan!`);
+
+            for (const qcData of itemsToSave) {
+                const saved = await saveToSupabase(qcData);
+                if (saved) {
+                    backupSuccessCount += 1;
+                } else {
+                    backupFailCount += 1;
+                }
+            }
+
+            let message = `${scanningSession.length} item berhasil disimpan lokal.`;
+            if (backupSuccessCount > 0) {
+                message += ` ${backupSuccessCount} item berhasil dibackup ke Supabase.`;
+            }
+            if (backupFailCount > 0) {
+                message += ` ${backupFailCount} item gagal dibackup ke Supabase.`;
+            }
+
+            alert(message);
             scanningSession = [];
             updateScanningTableDisplay();
             updateScanningStats();
