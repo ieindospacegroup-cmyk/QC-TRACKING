@@ -1378,6 +1378,12 @@
                 </div>
             </div>
 
+            <div class="tracking-search" style="margin-top: 15px; margin-bottom: 15px; display: flex; gap: 8px; align-items: center;">
+                <input id="trackingSearchInput" type="text" placeholder="Cari JO Number / Product Code / Product Name..." 
+                       style="flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" />
+                <button id="trackingSearchBtn" class="btn-secondary" style="padding: 10px 16px; background: #667eea; color: white; border: none;">🔍 Cari</button>
+            </div>
+
             <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <button id="syncSupabaseButton" class="btn-secondary" style="width: auto; padding: 10px 18px;" onclick="syncLocalHistoryToSupabase()">Sinkronkan Lokal ke Supabase</button>
                 <button id="refreshSupabaseButton" class="btn-secondary" style="width: auto; padding: 10px 18px; background: #4caf50;" onclick="loadFromSupabase()">Refresh dari Supabase</button>
@@ -1597,6 +1603,23 @@
             loadFromStorage();
             updateSupabaseUI();
             populateUsernameDropdown();
+            
+            // Attach tracking search handlers
+            const trackingInput = document.getElementById('trackingSearchInput');
+            const searchBtn = document.getElementById('trackingSearchBtn');
+            if (trackingInput) {
+                trackingInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        applyTrackingFilter(this.value);
+                    }
+                });
+            }
+            if (searchBtn && trackingInput) {
+                searchBtn.addEventListener('click', function() {
+                    applyTrackingFilter(trackingInput.value);
+                    trackingInput.focus();
+                });
+            }
         });
 
         function populateUsernameDropdown() {
@@ -2326,6 +2349,9 @@
             }
 
             updateTrackingStats();
+            // Apply current search filter (if any)
+            const searchValEl = document.getElementById('trackingSearchInput');
+            if (searchValEl) applyTrackingFilter(searchValEl.value);
         }
 
         function updateTrackingStats(data) {
@@ -2348,6 +2374,31 @@
             document.getElementById('locationPage').classList.add('active');
             document.getElementById('qcMenuBtn').style.borderColor = '#667eea';
             document.getElementById('trackingMenuBtn').style.borderColor = '#e0e0e0';
+        }
+
+        function applyTrackingFilter(query) {
+            const q = String(query || '').trim().toLowerCase();
+            const tbody = document.getElementById('trackingTableBody');
+            if (!tbody) return;
+            // If empty query, show all
+            if (!q) {
+                Array.from(tbody.children).forEach(tr => tr.style.display = '');
+                return;
+            }
+
+            Array.from(tbody.children).forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                const jo = cells[0] ? (cells[0].textContent || '').toLowerCase() : '';
+                const code = cells[1] ? (cells[1].textContent || '').toLowerCase() : '';
+                const name = cells[2] ? (cells[2].textContent || '').toLowerCase() : '';
+
+                // Match query against JO, Product Code, or Product Name
+                if (jo.indexOf(q) !== -1 || code.indexOf(q) !== -1 || name.indexOf(q) !== -1) {
+                    tr.style.display = '';
+                } else {
+                    tr.style.display = 'none';
+                }
+            });
         }
 
         // Helper Functions
