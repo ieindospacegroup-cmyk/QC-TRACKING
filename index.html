@@ -2225,7 +2225,8 @@
                             status: item.status,
                             username: item.username,
                             timestamp: item.timestamp,
-                            checkedQty: item.checkedQty
+                            checkedQty: item.checkedQty,
+                            serialNumber: item.serialNumber || '-'
                         });
                     }
                 }
@@ -2260,6 +2261,7 @@
                                     <span class="tracking-step-detail">QC: ${step.username}</span>
                                     <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
                                     <span class="tracking-step-detail">${qtyLabel}: ${step.checkedQty || 0}</span>
+                                    <span class="tracking-step-detail">Serial number: ${step.serialNumber || '-'}</span>
                                 </div>
                             `;
                         }).join('');
@@ -2271,6 +2273,7 @@
                                     <span class="tracking-step-detail">Dari: ${step.fromLocation}</span>
                                     <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
                                     <span class="tracking-step-detail">QTY: ${step.checkedQty || 0}</span>
+                                    <span class="tracking-step-detail">Serial number: ${step.serialNumber || '-'}</span>
                                 </div>
                             `).join('')
                             : '';
