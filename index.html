@@ -1771,18 +1771,33 @@
                 return;
             }
 
+            const sameGroupItems = scanningSession.filter(item => item.joNumber === jo && item.productCode === productCode && item.totalQty === qty);
+            const totalScannedSoFar = sameGroupItems.reduce((sum, item) => sum + item.checkedQty, 0);
+
+            if (totalScannedSoFar >= qty) {
+                setScanError(`⚠️ QTY sudah mencapai TOTAL QTY ORDER (${qty}). Tidak bisa menambah scan lagi.`);
+                input.value = '';
+                return;
+            }
+
+            // Cek duplicate serial number pada seluruh grup JO/Product yang sama
+            const duplicateSerial = sameGroupItems.some(item => item.serialNumbers.includes(serialNumber));
+            if (duplicateSerial) {
+                setScanError(`⚠️ Serial Number "${serialNumber}" sudah pernah di-scan untuk JO ini! Scan dibatalkan.`);
+                input.value = '';
+                return;
+            }
+
             // Cari item dengan JO, Product Code, dan Status yang sama
             const existingItem = scanningSession.find(item => item.joNumber === jo && item.productCode === productCode && item.status === currentStatus);
 
             if (existingItem) {
-                // Cek double-scan: apakah Serial Number sudah ada?
-                if (existingItem.serialNumbers.includes(serialNumber)) {
-                    setScanError(`⚠️ Serial Number "${serialNumber}" sudah pernah di-scan untuk JO ini! Scan dibatalkan.`);
+                if (existingItem.checkedQty >= qty) {
+                    setScanError(`⚠️ QTY pada status ${currentStatus} sudah mencapai TOTAL QTY ORDER (${qty}).`);
                     input.value = '';
                     return;
                 }
 
-                // Akumulasi: tambah ke item yang sudah ada
                 existingItem.serialNumbers.push(serialNumber);
                 existingItem.checkedQty += 1;
             } else {
@@ -2166,18 +2181,29 @@
 
             const grouped = {};
             qcHistory.forEach(item => {
-                const key = `${item.joNumber || '-'}||${item.productCode || '-'}||${item.productName || '-'}||${item.totalQty || '-'}||${item.serialNumber || '-'}`;
+                const key = `${item.joNumber || '-'}||${item.productCode || '-'}`;
                 if (!grouped[key]) {
                     grouped[key] = {
                         joNumber: item.joNumber || '-',
                         productCode: item.productCode || '-',
                         productName: item.productName || '-',
-                        totalQty: item.totalQty || '-',
-                        serialNumber: item.serialNumber || '-',
-                        checkedQty: item.checkedQty || '-',
+                        totalQty: item.totalQty || 0,
+                        serialNumbers: new Set(),
+                        checkedQty: 0,
                         steps: {}
                     };
                 }
+
+                if (item.productName && grouped[key].productName === '-') {
+                    grouped[key].productName = item.productName;
+                }
+                if (item.totalQty && Number(item.totalQty) > grouped[key].totalQty) {
+                    grouped[key].totalQty = Number(item.totalQty);
+                }
+
+                const serialList = String(item.serialNumber || '').split(/;\s*/).filter(Boolean);
+                serialList.forEach(sn => grouped[key].serialNumbers.add(sn));
+                grouped[key].checkedQty += Number(item.checkedQty || 0);
 
                 const existing = grouped[key].steps[item.location];
                 if (!existing) {
@@ -2216,7 +2242,7 @@
                         row.productCode,
                         row.productName,
                         row.totalQty,
-                        row.serialNumber,
+                        Array.from(row.serialNumbers).join('; '),
                         row.checkedQty
                     ];
 
