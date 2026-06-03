@@ -2234,10 +2234,9 @@
                 grouped[key].checkedQty += Number(item.checkedQty || 0);
 
                 const existing = grouped[key].steps[item.location];
-                if (!existing) {
-                    grouped[key].steps[item.location] = [];
+                if (!existing || Number(item.createdAt) >= Number(existing.createdAt)) {
+                    grouped[key].steps[item.location] = item;
                 }
-                grouped[key].steps[item.location].push(item);
 
                 if (item.status === 'OKE') {
                     const nextLocation = getNextLocation(item.location);
@@ -2276,11 +2275,11 @@
                     ];
 
                     const stepCells = LOCATIONS.map(location => {
-                        const stepList = row.steps[location] || [];
+                        const stepItem = row.steps[location];
+                        const stepList = stepItem ? [stepItem] : [];
                         const virtualStepList = (row.virtualSteps && row.virtualSteps[location]) || [];
 
-                        const sortedSteps = stepList.slice().sort((a, b) => a.createdAt - b.createdAt);
-                        const entriesHtml = sortedSteps.map(step => {
+                        const entriesHtml = stepList.map(step => {
                             const statusClass = step.status.toLowerCase();
                             const qtyLabel = location === 'PACKING & WH PACKED' ? 'Packed QTY' : 'Qty';
                             return `
