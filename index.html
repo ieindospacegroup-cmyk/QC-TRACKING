@@ -760,10 +760,21 @@
             color: #c62828;
         }
 
+        .tracking-step-status.next-step {
+            color: #1565c0;
+        }
+
         .tracking-step-entry {
             margin-bottom: 10px;
             padding-bottom: 6px;
             border-bottom: 1px dashed #ddd;
+        }
+
+        .tracking-step-entry.next-step {
+            background: #e8f5e9;
+            border-bottom-color: #c8e6c9;
+            padding: 8px;
+            border-radius: 6px;
         }
 
         .tracking-step-entry:last-child {
@@ -2173,6 +2184,25 @@
                     grouped[key].steps[item.location] = [];
                 }
                 grouped[key].steps[item.location].push(item);
+
+                if (item.status === 'OKE') {
+                    const nextLocation = getNextLocation(item.location);
+                    if (nextLocation) {
+                        if (!grouped[key].virtualSteps) {
+                            grouped[key].virtualSteps = {};
+                        }
+                        if (!grouped[key].virtualSteps[nextLocation]) {
+                            grouped[key].virtualSteps[nextLocation] = [];
+                        }
+                        grouped[key].virtualSteps[nextLocation].push({
+                            fromLocation: item.location,
+                            status: item.status,
+                            username: item.username,
+                            timestamp: item.timestamp,
+                            checkedQty: item.checkedQty
+                        });
+                    }
+                }
             });
 
             const rows = Object.values(grouped);
@@ -2191,10 +2221,8 @@
                     ];
 
                     const stepCells = LOCATIONS.map(location => {
-                        const stepList = row.steps[location];
-                        if (!stepList || !stepList.length) {
-                            return '<td class="tracking-step-cell">-</td>';
-                        }
+                        const stepList = row.steps[location] || [];
+                        const virtualStepList = (row.virtualSteps && row.virtualSteps[location]) || [];
 
                         const sortedSteps = stepList.slice().sort((a, b) => a.createdAt - b.createdAt);
                         const entriesHtml = sortedSteps.map(step => {
@@ -2210,7 +2238,22 @@
                             `;
                         }).join('');
 
-                        return `<td class="tracking-step-cell">${entriesHtml}</td>`;
+                        const virtualEntriesHtml = (!stepList.length && virtualStepList.length)
+                            ? virtualStepList.map(step => `
+                                <div class="tracking-step-entry next-step">
+                                    <span class="tracking-step-status next-step">NEXT STEP</span>
+                                    <span class="tracking-step-detail">Dari: ${step.fromLocation}</span>
+                                    <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
+                                    <span class="tracking-step-detail">QTY: ${step.checkedQty || 0}</span>
+                                </div>
+                            `).join('')
+                            : '';
+
+                        if (!entriesHtml && !virtualEntriesHtml) {
+                            return '<td class="tracking-step-cell">-</td>';
+                        }
+
+                        return `<td class="tracking-step-cell">${entriesHtml}${virtualEntriesHtml}</td>`;
                     });
 
                     tr.innerHTML = `
@@ -2237,6 +2280,11 @@
             document.getElementById('totalItemsTracked').textContent = total;
             document.getElementById('okeCount').textContent = oke;
             document.getElementById('rejectRevisiCount').textContent = rejectRevisi;
+        }
+
+        function getNextLocation(currentLocation) {
+            const index = LOCATIONS.indexOf(currentLocation);
+            return index >= 0 && index < LOCATIONS.length - 1 ? LOCATIONS[index + 1] : null;
         }
 
         function goBackFromTracking() {
