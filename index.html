@@ -722,12 +722,64 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
+        /* Freeze kolom pertama (JO Number) */
+        .tracking-table th:nth-child(1),
+        .tracking-table td:nth-child(1) {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            background: #f5f5f5;
+            border-right: 2px solid #ddd;
+            min-width: 120px;
+        }
+
+        /* Freeze kolom kedua (Product Code) */
+        .tracking-table th:nth-child(2),
+        .tracking-table td:nth-child(2) {
+            position: sticky;
+            left: 120px;
+            z-index: 5;
+            background: #f5f5f5;
+            border-right: 2px solid #ddd;
+            min-width: 130px;
+        }
+
+        /* Freeze kolom ketiga (Product Name) */
+        .tracking-table th:nth-child(3),
+        .tracking-table td:nth-child(3) {
+            position: sticky;
+            left: 250px;
+            z-index: 5;
+            background: #f5f5f5;
+            border-right: 2px solid #ddd;
+            min-width: 180px;
+        }
+
+        /* Freeze kolom keempat (TOTAL QTY ORDER) */
+        .tracking-table th:nth-child(4),
+        .tracking-table td:nth-child(4) {
+            position: sticky;
+            left: 430px;
+            z-index: 5;
+            background: #f5f5f5;
+            border-right: 2px solid #ddd;
+            min-width: 140px;
+        }
+
+        /* Z-index lebih tinggi untuk header yang di-freeze */
+        .tracking-table thead th:nth-child(1),
+        .tracking-table thead th:nth-child(2),
+        .tracking-table thead th:nth-child(3),
+        .tracking-table thead th:nth-child(4) {
+            z-index: 15;
+        }
+
         .tracking-table th,
         .tracking-table td {
             border: 1px solid #e0e0e0;
             padding: 12px;
             text-align: left;
-            vertical-align: top;
+            vertical-align: middle;
             font-size: 13px;
             white-space: nowrap;
         }
