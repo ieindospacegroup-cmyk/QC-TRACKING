@@ -106,6 +106,8 @@
             padding: 24px;
             border-radius: 14px;
             width: min(420px, 95%);
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.25);
         }
 
@@ -707,11 +709,12 @@
 
         .tracking-table-container {
             overflow-x: auto;
+            overflow-y: auto;
             margin-bottom: 20px;
             height: 400px;
-            overflow-y: auto;
             border: 1px solid #e0e0e0;
             border-radius: 10px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .tracking-table thead th {
@@ -852,6 +855,23 @@
             box-shadow: 0 0 0 3px rgba(102,126,234,0.08);
         }
 
+        /* Responsive tracking search */
+        @media (max-width: 600px) {
+            .tracking-search {
+                flex-direction: row;
+            }
+
+            .tracking-search span {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            .tracking-search input {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
+
         .scanning-table th.highlight-key,
         .scanning-table td.highlight-key {
             font-weight: 700;
@@ -961,6 +981,10 @@
                 font-size: 24px;
             }
 
+            .header p {
+                font-size: 13px;
+            }
+
             .location-grid {
                 grid-template-columns: 1fr;
             }
@@ -989,6 +1013,46 @@
 
             .button-group {
                 grid-template-columns: 1fr;
+            }
+
+            /* Adjust input and button sizes for mobile */
+            input[type="text"],
+            input[type="number"],
+            select {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 15px;
+            }
+
+            .location-btn {
+                padding: 14px;
+                font-size: 14px;
+            }
+
+            /* Disable frozen columns on mobile */
+            .tracking-table th:nth-child(1),
+            .tracking-table td:nth-child(1),
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2),
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3),
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                position: static;
+                left: auto;
+                z-index: auto;
+                border-right: 1px solid #e0e0e0;
+            }
+
+            .tracking-table thead th:nth-child(1),
+            .tracking-table thead th:nth-child(2),
+            .tracking-table thead th:nth-child(3),
+            .tracking-table thead th:nth-child(4) {
+                z-index: 10;
             }
         }
 
@@ -1077,6 +1141,46 @@
             .rejection-options {
                 grid-template-columns: 1fr;
             }
+
+            /* Adjust input and button sizes for small mobile */
+            input[type="text"],
+            input[type="number"],
+            select {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .location-btn {
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            /* Ensure frozen columns are disabled on small mobile */
+            .tracking-table th:nth-child(1),
+            .tracking-table td:nth-child(1),
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2),
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3),
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                position: static;
+                left: auto;
+                z-index: auto;
+                border-right: 1px solid #e0e0e0;
+            }
+
+            .tracking-table thead th:nth-child(1),
+            .tracking-table thead th:nth-child(2),
+            .tracking-table thead th:nth-child(3),
+            .tracking-table thead th:nth-child(4) {
+                z-index: 10;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1087,6 +1191,10 @@
 
             .header h1 {
                 font-size: 20px;
+            }
+
+            .header p {
+                font-size: 12px;
             }
 
             .tracking-table th,
@@ -1115,6 +1223,46 @@
                 flex: 1 1 100%;
                 min-width: 100%;
             }
+
+            /* Adjust input and button sizes for very small mobile */
+            input[type="text"],
+            input[type="number"],
+            select {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .location-btn {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            /* Ensure frozen columns are disabled on very small mobile */
+            .tracking-table th:nth-child(1),
+            .tracking-table td:nth-child(1),
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2),
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3),
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                position: static;
+                left: auto;
+                z-index: auto;
+                border-right: 1px solid #e0e0e0;
+            }
+
+            .tracking-table thead th:nth-child(1),
+            .tracking-table thead th:nth-child(2),
+            .tracking-table thead th:nth-child(3),
+            .tracking-table thead th:nth-child(4) {
+                z-index: 10;
+            }
         }
 
         @media (max-width: 360px) {
@@ -1127,6 +1275,10 @@
                 font-size: 18px;
             }
 
+            .header p {
+                font-size: 11px;
+            }
+
             .tracking-table th,
             .tracking-table td {
                 padding: 4px;
@@ -1135,6 +1287,46 @@
 
             .tracking-step-cell {
                 min-width: 80px;
+            }
+
+            /* Adjust input and button sizes for smallest mobile */
+            input[type="text"],
+            input[type="number"],
+            select {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 13px;
+            }
+
+            .location-btn {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            /* Ensure frozen columns are disabled on smallest mobile */
+            .tracking-table th:nth-child(1),
+            .tracking-table td:nth-child(1),
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2),
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3),
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                position: static;
+                left: auto;
+                z-index: auto;
+                border-right: 1px solid #e0e0e0;
+            }
+
+            .tracking-table thead th:nth-child(1),
+            .tracking-table thead th:nth-child(2),
+            .tracking-table thead th:nth-child(3),
+            .tracking-table thead th:nth-child(4) {
+                z-index: 10;
             }
         }
     </style>
