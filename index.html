@@ -1142,26 +1142,29 @@
                 left: 240px;
             }
 
-            /* Disable frozen columns on mobile */
+            /* Adjust frozen column widths for tracking-table on mobile */
             .tracking-table th:nth-child(1),
-            .tracking-table td:nth-child(1),
-            .tracking-table th:nth-child(2),
-            .tracking-table td:nth-child(2),
-            .tracking-table th:nth-child(3),
-            .tracking-table td:nth-child(3),
-            .tracking-table th:nth-child(4),
-            .tracking-table td:nth-child(4) {
-                position: static;
-                left: auto;
-                z-index: auto;
-                border-right: 1px solid #e0e0e0;
+            .tracking-table td:nth-child(1) {
+                min-width: 70px;
+                left: 0;
             }
 
-            .tracking-table thead th:nth-child(1),
-            .tracking-table thead th:nth-child(2),
-            .tracking-table thead th:nth-child(3),
-            .tracking-table thead th:nth-child(4) {
-                z-index: 10;
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2) {
+                min-width: 80px;
+                left: 70px;
+            }
+
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3) {
+                min-width: 90px;
+                left: 150px;
+            }
+
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                min-width: 70px;
+                left: 240px;
             }
         }
 
@@ -1294,26 +1297,29 @@
                 left: 210px;
             }
 
-            /* Ensure frozen columns are disabled on small mobile */
+            /* Adjust frozen column widths for tracking-table on small mobile */
             .tracking-table th:nth-child(1),
-            .tracking-table td:nth-child(1),
-            .tracking-table th:nth-child(2),
-            .tracking-table td:nth-child(2),
-            .tracking-table th:nth-child(3),
-            .tracking-table td:nth-child(3),
-            .tracking-table th:nth-child(4),
-            .tracking-table td:nth-child(4) {
-                position: static;
-                left: auto;
-                z-index: auto;
-                border-right: 1px solid #e0e0e0;
+            .tracking-table td:nth-child(1) {
+                min-width: 60px;
+                left: 0;
             }
 
-            .tracking-table thead th:nth-child(1),
-            .tracking-table thead th:nth-child(2),
-            .tracking-table thead th:nth-child(3),
-            .tracking-table thead th:nth-child(4) {
-                z-index: 10;
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2) {
+                min-width: 70px;
+                left: 60px;
+            }
+
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3) {
+                min-width: 80px;
+                left: 130px;
+            }
+
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                min-width: 60px;
+                left: 210px;
             }
         }
 
@@ -1401,26 +1407,29 @@
                 left: 180px;
             }
 
-            /* Ensure frozen columns are disabled on very small mobile */
+            /* Adjust frozen column widths for tracking-table on very small mobile */
             .tracking-table th:nth-child(1),
-            .tracking-table td:nth-child(1),
-            .tracking-table th:nth-child(2),
-            .tracking-table td:nth-child(2),
-            .tracking-table th:nth-child(3),
-            .tracking-table td:nth-child(3),
-            .tracking-table th:nth-child(4),
-            .tracking-table td:nth-child(4) {
-                position: static;
-                left: auto;
-                z-index: auto;
-                border-right: 1px solid #e0e0e0;
+            .tracking-table td:nth-child(1) {
+                min-width: 50px;
+                left: 0;
             }
 
-            .tracking-table thead th:nth-child(1),
-            .tracking-table thead th:nth-child(2),
-            .tracking-table thead th:nth-child(3),
-            .tracking-table thead th:nth-child(4) {
-                z-index: 10;
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2) {
+                min-width: 60px;
+                left: 50px;
+            }
+
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3) {
+                min-width: 70px;
+                left: 110px;
+            }
+
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                min-width: 50px;
+                left: 180px;
             }
         }
 
@@ -1491,26 +1500,29 @@
                 left: 165px;
             }
 
-            /* Ensure frozen columns are disabled on smallest mobile */
+            /* Adjust frozen column widths for tracking-table on smallest mobile */
             .tracking-table th:nth-child(1),
-            .tracking-table td:nth-child(1),
-            .tracking-table th:nth-child(2),
-            .tracking-table td:nth-child(2),
-            .tracking-table th:nth-child(3),
-            .tracking-table td:nth-child(3),
-            .tracking-table th:nth-child(4),
-            .tracking-table td:nth-child(4) {
-                position: static;
-                left: auto;
-                z-index: auto;
-                border-right: 1px solid #e0e0e0;
+            .tracking-table td:nth-child(1) {
+                min-width: 45px;
+                left: 0;
             }
 
-            .tracking-table thead th:nth-child(1),
-            .tracking-table thead th:nth-child(2),
-            .tracking-table thead th:nth-child(3),
-            .tracking-table thead th:nth-child(4) {
-                z-index: 10;
+            .tracking-table th:nth-child(2),
+            .tracking-table td:nth-child(2) {
+                min-width: 55px;
+                left: 45px;
+            }
+
+            .tracking-table th:nth-child(3),
+            .tracking-table td:nth-child(3) {
+                min-width: 65px;
+                left: 100px;
+            }
+
+            .tracking-table th:nth-child(4),
+            .tracking-table td:nth-child(4) {
+                min-width: 45px;
+                left: 165px;
             }
         }
     </style>
