@@ -747,33 +747,10 @@
             min-width: 130px;
         }
 
-        /* Freeze kolom ketiga (Product Name) */
-        .tracking-table th:nth-child(3),
-        .tracking-table td:nth-child(3) {
-            position: sticky;
-            left: 250px;
-            z-index: 5;
-            background: #f5f5f5;
-            border-right: 2px solid #ddd;
-            min-width: 180px;
-        }
-
-        /* Freeze kolom keempat (TOTAL QTY ORDER) */
-        .tracking-table th:nth-child(4),
-        .tracking-table td:nth-child(4) {
-            position: sticky;
-            left: 430px;
-            z-index: 5;
-            background: #f5f5f5;
-            border-right: 2px solid #ddd;
-            min-width: 140px;
-        }
 
         /* Z-index lebih tinggi untuk header yang di-freeze */
         .tracking-table thead th:nth-child(1),
-        .tracking-table thead th:nth-child(2),
-        .tracking-table thead th:nth-child(3),
-        .tracking-table thead th:nth-child(4) {
+        .tracking-table thead th:nth-child(2) {
             z-index: 15;
         }
 
@@ -978,31 +955,10 @@
             min-width: 90px;
         }
 
-        .scanning-table th:nth-child(3),
-        .scanning-table td:nth-child(3) {
-            position: sticky;
-            left: 170px;
-            background: #f5f5f5;
-            z-index: 5;
-            border-right: 2px solid #ddd;
-            min-width: 100px;
-        }
-
-        .scanning-table th:nth-child(4),
-        .scanning-table td:nth-child(4) {
-            position: sticky;
-            left: 270px;
-            background: #f5f5f5;
-            z-index: 5;
-            border-right: 2px solid #ddd;
-            min-width: 80px;
-        }
 
         /* Higher z-index for frozen header cells in scanning table */
         .scanning-table thead th:nth-child(1),
-        .scanning-table thead th:nth-child(2),
-        .scanning-table thead th:nth-child(3),
-        .scanning-table thead th:nth-child(4) {
+        .scanning-table thead th:nth-child(2) {
             z-index: 15;
         }
 
@@ -1130,17 +1086,6 @@
                 left: 70px;
             }
 
-            .scanning-table th:nth-child(3),
-            .scanning-table td:nth-child(3) {
-                min-width: 90px;
-                left: 150px;
-            }
-
-            .scanning-table th:nth-child(4),
-            .scanning-table td:nth-child(4) {
-                min-width: 70px;
-                left: 240px;
-            }
 
             /* Adjust frozen column widths for tracking-table on mobile */
             .tracking-table th:nth-child(1),
@@ -1155,17 +1100,6 @@
                 left: 70px;
             }
 
-            .tracking-table th:nth-child(3),
-            .tracking-table td:nth-child(3) {
-                min-width: 90px;
-                left: 150px;
-            }
-
-            .tracking-table th:nth-child(4),
-            .tracking-table td:nth-child(4) {
-                min-width: 70px;
-                left: 240px;
-            }
         }
 
         @media (max-width: 600px) {
