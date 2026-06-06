@@ -1785,8 +1785,6 @@
                             <th>Product Code</th>
                             <th>Product Name</th>
                             <th>TOTAL QTY ORDER</th>
-                            <th>Serial Number</th>
-                            <th>QTY Check</th>
                             <th>MILLING 1 &amp; MILLING 2</th>
                             <th>ASSEMBLY</th>
                             <th>WAREHOUSE, SEMI FINISH &amp; INDOSPACE</th>
@@ -2669,7 +2667,7 @@
 
             const rows = Object.values(grouped);
             if (rows.length === 0) {
-                trackingTableBody.innerHTML = '<tr><td colspan="13" class="tracking-empty">Belum ada data QC untuk ditampilkan.</td></tr>';
+                trackingTableBody.innerHTML = '<tr><td colspan="11" class="tracking-empty">Belum ada data QC untuk ditampilkan.</td></tr>';
             } else {
                 rows.forEach(row => {
                     const tr = document.createElement('tr');
@@ -2677,26 +2675,24 @@
                         row.joNumber,
                         row.productCode,
                         row.productName,
-                        row.totalQty,
-                        Array.from(row.serialNumbers).join('; '),
-                        row.checkedQty
+                        row.totalQty
                     ];
 
                     const stepCells = LOCATIONS.map(location => {
                         const stepItem = row.steps[location];
-                        const stepList = stepItem ? [stepItem] : [];
+                        const stepList = (stepItem && stepItem.status) ? [stepItem] : [];
                         const virtualStepList = (row.virtualSteps && row.virtualSteps[location]) || [];
 
                         const entriesHtml = stepList.map(step => {
-                            const statusClass = step.status.toLowerCase();
+                            const statusClass = (step.status || '').toLowerCase();
                             const qtyLabel = location === 'PACKING & WH PACKED' ? 'Packed QTY' : 'Qty';
                             const showSerialNumber = step.status !== 'OKE';
                             const serialNumberLine = showSerialNumber ? `<span class="tracking-step-detail">Serial number: ${step.serialNumber || '-'}</span>` : '';
                             return `
                                 <div class="tracking-step-entry">
-                                    <span class="tracking-step-status ${statusClass}">${step.status}</span>
-                                    <span class="tracking-step-detail">QC: ${step.username}</span>
-                                    <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
+                                    <span class="tracking-step-status ${statusClass}">${step.status || '-'}</span>
+                                    <span class="tracking-step-detail">QC: ${step.username || '-'}</span>
+                                    <span class="tracking-step-detail">Waktu: ${step.timestamp || '-'}</span>
                                     <span class="tracking-step-detail">${qtyLabel}: ${step.checkedQty || 0}</span>
                                     ${serialNumberLine}
                                 </div>
@@ -2707,8 +2703,8 @@
                             ? virtualStepList.map(step => `
                                 <div class="tracking-step-entry next-step">
                                     <span class="tracking-step-status next-step">NEXT STEP</span>
-                                    <span class="tracking-step-detail">Dari: ${step.fromLocation}</span>
-                                    <span class="tracking-step-detail">Waktu: ${step.timestamp}</span>
+                                    <span class="tracking-step-detail">Dari: ${step.fromLocation || '-'}</span>
+                                    <span class="tracking-step-detail">Waktu: ${step.timestamp || '-'}</span>
                                     <span class="tracking-step-detail">QTY: ${step.checkedQty || 0}</span>
                                     <span class="tracking-step-detail">Serial number: ${step.serialNumber || '-'}</span>
                                 </div>
@@ -2727,8 +2723,6 @@
                         <td>${cells[1]}</td>
                         <td>${cells[2]}</td>
                         <td>${cells[3]}</td>
-                        <td>${cells[4]}</td>
-                        <td>${cells[5]}</td>
                         ${stepCells.join('')}
                     `;
                     trackingTableBody.appendChild(tr);
