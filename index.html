@@ -1854,7 +1854,11 @@
             }];
 
             try {
-                const response = await fetch(`${SUPABASE_REST_URL}/${SUPABASE_TABLE}`, {
+                const url = `${SUPABASE_REST_URL}/${SUPABASE_TABLE}`;
+                console.log('Supabase POST URL:', url);
+                console.log('Payload:', payload);
+
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1868,9 +1872,11 @@
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('Supabase REST insert error:', response.status, errorText);
+                    console.error('Full response:', response);
                     return false;
                 }
 
+                console.log('Supabase insert successful');
                 return true;
             } catch (error) {
                 console.error('Supabase REST insert exception:', error);
@@ -1923,7 +1929,10 @@
             }
 
             try {
-                const response = await fetch(`${SUPABASE_REST_URL}/${SUPABASE_TABLE}`, {
+                const url = `${SUPABASE_REST_URL}/${SUPABASE_TABLE}`;
+                console.log('Supabase GET URL:', url);
+
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1935,11 +1944,14 @@
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.error('Supabase REST fetch error:', response.status, errorText);
+                    console.error('Full response:', response);
                     alert('Gagal mengambil data dari Supabase.');
                     return;
                 }
 
                 const data = await response.json();
+                console.log('Supabase data received:', data);
+
                 if (!Array.isArray(data)) {
                     alert('Format data dari Supabase tidak valid.');
                     return;
