@@ -2254,7 +2254,14 @@
             updateScanningStats();
             input.value = '';
             setScanError('');
-            input.focus();
+            
+            // Focus on the Remarks input of the newly added row
+            const remarksInputs = document.querySelectorAll('.remarks-input');
+            if (remarksInputs.length > 0) {
+                remarksInputs[remarksInputs.length - 1].focus();
+            } else {
+                input.focus();
+            }
         }
 
         function updateScanningTableDisplay() {
