@@ -2310,6 +2310,8 @@
                     <td>
                         <input type="text" class="remarks-input" value="${item.remarks}" 
                                onchange="updateRemarks(${index}, this.value)" 
+                               onfocus="this.removeAttribute('readonly');"
+                               readonly inputmode="text" autocomplete="off"
                                placeholder="Catatan..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
                     </td>
                     <td>
