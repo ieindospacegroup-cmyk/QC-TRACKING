@@ -2302,7 +2302,10 @@
                     <td>
                         <input type="text" class="remarks-input" value="${item.remarks}" 
                                onchange="updateRemarks(${index}, this.value)" 
-                               placeholder="Catatan..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                               oninput="updateRemarks(${index}, this.value)"
+                               inputmode="text"
+                               autocomplete="off"
+                               placeholder="Catatan..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; -webkit-appearance: none;">
                     </td>
                     <td>
                         <button type="button" class="btn-delete" onclick="removeScannedItem(${index})" 
