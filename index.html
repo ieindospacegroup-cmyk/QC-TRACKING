@@ -1612,7 +1612,8 @@
                     <div style="margin-bottom: 12px;">
                         <label>Scan QR Code:</label>
                         <input id="scanInput" class="scan-input" type="text" placeholder="Scan atau tempel QR di sini..." 
-                               onkeydown="if(event.key==='Enter'){processScanData();event.preventDefault();}">
+                               onkeydown="if(event.key==='Enter'){processScanData();event.preventDefault();}"
+                               autofocus inputmode="text" autocomplete="off">
                         <button type="button" onclick="processScanData()" style="width: auto; padding: 8px 16px; margin-top: 6px;">Proses Scan</button>
                     </div>
 
@@ -2137,7 +2138,11 @@
             modal.classList.remove('hidden');
             input.value = '';
             error.textContent = '';
-            setTimeout(() => input.focus(), 100);
+            // Ensure keyboard appears on mobile devices
+            setTimeout(() => {
+                input.focus();
+                input.click();
+            }, 100);
         }
 
         function closeScanModal() {
