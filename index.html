@@ -2278,17 +2278,6 @@
             input.value = '';
             setScanError('');
             input.focus();
-
-            // Auto-focus remarks input for the newly added item
-            setTimeout(() => {
-                const newIndex = scanningSession.length - 1;
-                const remarksInput = document.getElementById(`remarks-${newIndex}`);
-                if (remarksInput) {
-                    remarksInput.removeAttribute('readonly');
-                    remarksInput.focus();
-                    remarksInput.click();
-                }
-            }, 100);
         }
 
         function updateScanningTableDisplay() {
