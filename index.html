@@ -2303,9 +2303,13 @@
                         <input type="text" class="remarks-input" value="${item.remarks}" 
                                onchange="updateRemarks(${index}, this.value)" 
                                oninput="updateRemarks(${index}, this.value)"
+                               onfocus="this.select()"
                                inputmode="text"
                                autocomplete="off"
-                               placeholder="Catatan..." style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; -webkit-appearance: none;">
+                               autocorrect="on"
+                               spellcheck="true"
+                               placeholder="Catatan..." 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; -webkit-appearance: none; font-size: 14px; min-height: 36px; touch-action: manipulation;">
                     </td>
                     <td>
                         <button type="button" class="btn-delete" onclick="removeScannedItem(${index})" 
