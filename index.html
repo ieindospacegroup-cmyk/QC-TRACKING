@@ -2208,6 +2208,20 @@
                 return;
             }
 
+            // Cek apakah serial number sudah discan di lokasi yang sama dengan status OKE di history
+            const historyDuplicate = qcHistory.some(item =>
+                item.joNumber === jo &&
+                item.productCode === productCode &&
+                item.serialNumber === serialNumber &&
+                item.location === currentLocation &&
+                item.status === 'OKE'
+            );
+            if (historyDuplicate) {
+                setScanError(`⚠️ Serial Number "${serialNumber}" sudah pernah di-scan di lokasi "${currentLocation}" dengan status OKE! Tidak bisa scan ulang.`);
+                input.value = '';
+                return;
+            }
+
             // Cari item dengan JO, Product Code, dan Status yang sama
             const existingItem = scanningSession.find(item => item.joNumber === jo && item.productCode === productCode && item.status === currentStatus);
 
