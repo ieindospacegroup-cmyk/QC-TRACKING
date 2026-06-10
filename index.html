@@ -1613,8 +1613,10 @@
                         <label>Scan QR Code:</label>
                         <input id="scanInput" class="scan-input" type="text" placeholder="Scan atau tempel QR di sini..." 
                                onkeydown="if(event.key==='Enter'){processScanData();event.preventDefault();}"
-                               autofocus inputmode="text" autocomplete="off">
-                        <button type="button" onclick="processScanData()" style="width: auto; padding: 8px 16px; margin-top: 6px;">Proses Scan</button>
+                               onfocus="this.removeAttribute('readonly');"
+                               readonly inputmode="text" autocomplete="off">
+                        <button type="button" onclick="focusScanInput()" style="width: auto; padding: 8px 16px; margin-top: 6px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">📱 Buka Keyboard</button>
+                        <button type="button" onclick="processScanData()" style="width: auto; padding: 8px 16px; margin-top: 6px; margin-left: 5px;">Proses Scan</button>
                     </div>
 
                     <div id="scanError" class="scan-error" style="margin-bottom: 12px;"></div>
@@ -2143,6 +2145,14 @@
                 input.focus();
                 input.click();
             }, 100);
+        }
+
+        function focusScanInput() {
+            const input = document.getElementById('scanInput');
+            if (!input) return;
+            input.removeAttribute('readonly');
+            input.focus();
+            input.click();
         }
 
         function closeScanModal() {
