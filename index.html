@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERP QC dan Tracking - Manufaktur</title>
     <style>
         * {
@@ -902,71 +902,6 @@
             font-size: 12px;
         }
 
-        .scanning-table tr.editing-remarks {
-            background: #e8f4fd !important;
-            border-left: 4px solid #2196f3;
-        }
-
-        .scanning-table tr.editing-remarks td {
-            background: transparent;
-        }
-
-        .remarks-edit-area {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9ff;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-        }
-
-        .remarks-edit-area h4 {
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .remarks-edit-area .item-info {
-            margin-bottom: 10px;
-            font-size: 13px;
-            color: #666;
-            padding: 8px;
-            background: white;
-            border-radius: 4px;
-        }
-
-        .remarks-edit-area textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 120px;
-            transition: border-color 0.3s;
-        }
-
-        .remarks-edit-area textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn-edit-remarks {
-            padding: 4px 8px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background 0.2s;
-        }
-
-        .btn-edit-remarks:hover {
-            background: #1976d2;
-        }
-
         .scanning-table {
             width: 100%;
             border-collapse: collapse;
@@ -1698,24 +1633,13 @@
                                         <th>Serial Number</th>
                                         <th>Reason</th>
                                         <th>Remarks</th>
-                                        <th>Edit</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="scanningTableBody">
-                                    <tr><td colspan="11" class="tracking-empty">Belum ada item di-scan.</td></tr>
+                                    <tr><td colspan="10" class="tracking-empty">Belum ada item di-scan.</td></tr>
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-
-                    <div class="remarks-edit-area" id="remarksEditArea" style="display: none;">
-                        <h4>✏️ Edit Remarks</h4>
-                        <div class="item-info" id="remarksItemInfo"></div>
-                        <textarea id="remarksTextarea" placeholder="Ketik catatan untuk item ini..."></textarea>
-                        <div style="margin-top: 10px; display: flex; gap: 10px;">
-                            <button type="button" onclick="saveRemarks()" style="background: #4caf50; width: auto; padding: 10px 20px;">💾 Simpan Remarks</button>
-                            <button type="button" class="btn-secondary" onclick="cancelRemarksEdit()" style="width: auto; padding: 10px 20px;">Batal</button>
                         </div>
                     </div>
 
@@ -1910,7 +1834,6 @@
         async function saveToSupabase(qcData) {
             if (!isSupabaseConfigured()) {
                 console.warn('Supabase belum dikonfigurasi. Lewati backup online.');
-                alert('⚠️ Supabase belum dikonfigurasi. Data hanya disimpan di localStorage.');
                 return false;
             }
 
@@ -1950,7 +1873,6 @@
                     const errorText = await response.text();
                     console.error('Supabase REST insert error:', response.status, errorText);
                     console.error('Full response:', response);
-                    alert(`❌ Gagal menyimpan ke Supabase: ${response.status} - ${errorText}`);
                     return false;
                 }
 
@@ -1958,7 +1880,6 @@
                 return true;
             } catch (error) {
                 console.error('Supabase REST insert exception:', error);
-                alert(`❌ Error koneksi Supabase: ${error.message}`);
                 return false;
             }
         }
@@ -2074,7 +1995,6 @@
         let currentCheckedQty = null;
         let qcHistory = [];
         let scanningSession = []; // Format: { joNumber, productCode, productName, status, totalQty, checkedQty, serialNumbers: [], remarks: '' }
-        let editingRemarksIndex = null; // Track which item is being edited for remarks
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -2334,9 +2254,14 @@
             updateScanningStats();
             input.value = '';
             setScanError('');
-
-            // Focus back on scan input for continuous scanning
-            input.focus();
+            
+            // Focus on the Remarks input of the newly added row
+            const remarksInputs = document.querySelectorAll('.remarks-input');
+            if (remarksInputs.length > 0) {
+                remarksInputs[remarksInputs.length - 1].focus();
+            } else {
+                input.focus();
+            }
         }
 
         function updateScanningTableDisplay() {
@@ -2346,7 +2271,7 @@
             scanTableBody.innerHTML = '';
 
             if (scanningSession.length === 0) {
-                scanTableBody.innerHTML = '<tr><td colspan="11" class="tracking-empty">Belum ada item di-scan.</td></tr>';
+                scanTableBody.innerHTML = '<tr><td colspan="10" class="tracking-empty">Belum ada item di-scan.</td></tr>';
                 return;
             }
 
@@ -2354,11 +2279,6 @@
                 const tr = document.createElement('tr');
                 const statusClass = item.status.toLowerCase();
                 const serialList = item.serialNumbers.join(', ');
-
-                // Add visual indicator if this row is being edited
-                if (editingRemarksIndex === index) {
-                    tr.classList.add('editing-remarks');
-                }
 
                 tr.innerHTML = `
                     <td class="highlight-key">${item.joNumber}</td>
@@ -2379,9 +2299,17 @@
                             <option value="R. HARDWARE" ${item.reason === 'R. HARDWARE' ? 'selected' : ''}>R. HARDWARE</option>
                         </select>
                     </td>
-                    <td style="font-size: 12px; color: #666; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.remarks || '-'}</td>
                     <td>
-                        <button type="button" class="btn-edit-remarks" onclick="editRemarks(${index})">✏️ Edit</button>
+                        <input type="text" class="remarks-input" value="${item.remarks}" 
+                               onchange="updateRemarks(${index}, this.value)" 
+                               oninput="updateRemarks(${index}, this.value)"
+                               onfocus="this.select()"
+                               inputmode="text"
+                               autocomplete="off"
+                               autocorrect="on"
+                               spellcheck="true"
+                               placeholder="Catatan..." 
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; -webkit-appearance: none; font-size: 14px; min-height: 36px; touch-action: manipulation;">
                     </td>
                     <td>
                         <button type="button" class="btn-delete" onclick="removeScannedItem(${index})" 
@@ -2396,62 +2324,6 @@
             if (scanningSession[index]) {
                 scanningSession[index].remarks = value;
             }
-        }
-
-        function editRemarks(index) {
-            if (!scanningSession[index]) return;
-
-            editingRemarksIndex = index;
-            const item = scanningSession[index];
-
-            // Show remarks editing area
-            const remarksEditArea = document.getElementById('remarksEditArea');
-            const remarksItemInfo = document.getElementById('remarksItemInfo');
-            const remarksTextarea = document.getElementById('remarksTextarea');
-
-            if (remarksEditArea && remarksItemInfo && remarksTextarea) {
-                remarksEditArea.style.display = 'block';
-                remarksItemInfo.innerHTML = `<strong>JO:</strong> ${item.joNumber} | <strong>Product:</strong> ${item.productCode} - ${item.productName} | <strong>Status:</strong> ${item.status}`;
-                remarksTextarea.value = item.remarks || '';
-
-                // Update table to show visual indicator
-                updateScanningTableDisplay();
-
-                // Scroll to remarks editing area
-                remarksEditArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-                // Focus on textarea
-                setTimeout(() => remarksTextarea.focus(), 300);
-            }
-        }
-
-        function saveRemarks() {
-            if (editingRemarksIndex === null || !scanningSession[editingRemarksIndex]) return;
-
-            const remarksTextarea = document.getElementById('remarksTextarea');
-            if (!remarksTextarea) return;
-
-            // Save remarks
-            scanningSession[editingRemarksIndex].remarks = remarksTextarea.value;
-
-            // Hide remarks editing area
-            cancelRemarksEdit();
-
-            // Update table to show new remarks
-            updateScanningTableDisplay();
-        }
-
-        function cancelRemarksEdit() {
-            editingRemarksIndex = null;
-
-            // Hide remarks editing area
-            const remarksEditArea = document.getElementById('remarksEditArea');
-            if (remarksEditArea) {
-                remarksEditArea.style.display = 'none';
-            }
-
-            // Update table to remove visual indicator
-            updateScanningTableDisplay();
         }
 
         function updateReason(index, value) {
@@ -2532,12 +2404,12 @@
                 }
             }
 
-            let message = `✅ ${scanningSession.length} item berhasil disimpan di localStorage.`;
+            let message = `${scanningSession.length} item berhasil disimpan lokal.`;
             if (backupSuccessCount > 0) {
-                message += `\n✅ ${backupSuccessCount} item berhasil dibackup ke Supabase.`;
+                message += ` ${backupSuccessCount} item berhasil dibackup ke Supabase.`;
             }
             if (backupFailCount > 0) {
-                message += `\n⚠️ ${backupFailCount} item gagal dibackup ke Supabase (cek console untuk detail).`;
+                message += ` ${backupFailCount} item gagal dibackup ke Supabase.`;
             }
 
             alert(message);
@@ -2545,12 +2417,6 @@
             updateScanningTableDisplay();
             updateScanningStats();
             resetScanningForm();
-            closeScanModal();
-            
-            // Refresh tracking data if tracking page is active
-            if (document.getElementById('trackingPage').classList.contains('active')) {
-                loadTrackingData();
-            }
         }
 
         function resetScanningForm() {
@@ -2780,8 +2646,6 @@
             document.getElementById('trackingMenuBtn').style.borderColor = '#667eea';
             document.getElementById('trackingMenuBtn').style.borderWidth = '2px';
             
-            // Reload data from localStorage to ensure latest data
-            loadFromStorage();
             loadTrackingData();
         }
 
