@@ -2255,13 +2255,8 @@
             input.value = '';
             setScanError('');
             
-            // Focus on the Remarks input of the newly added row
-            const remarksInputs = document.querySelectorAll('.remarks-input');
-            if (remarksInputs.length > 0) {
-                remarksInputs[remarksInputs.length - 1].focus();
-            } else {
-                input.focus();
-            }
+            // Focus kembali ke input scan untuk scan berikutnya
+            input.focus();
         }
 
         function updateScanningTableDisplay() {
