@@ -1832,8 +1832,12 @@
         }
 
         async function saveToSupabase(qcData) {
+            console.log('=== SAVE TO SUPABASE START ===');
+            console.log('qcData:', qcData);
+
             if (!isSupabaseConfigured()) {
                 console.warn('Supabase belum dikonfigurasi. Lewati backup online.');
+                alert('⚠️ Supabase belum dikonfigurasi. Data hanya disimpan di localStorage.');
                 return false;
             }
 
@@ -1856,7 +1860,8 @@
             try {
                 const url = `${SUPABASE_REST_URL}/${SUPABASE_TABLE}`;
                 console.log('Supabase POST URL:', url);
-                console.log('Payload:', payload);
+                console.log('Payload:', JSON.stringify(payload, null, 2));
+                console.log('API Key (first 20 chars):', SUPABASE_ANON_KEY.substring(0, 20) + '...');
 
                 const response = await fetch(url, {
                     method: 'POST',
@@ -1869,17 +1874,30 @@
                     body: JSON.stringify(payload)
                 });
 
+                console.log('Response status:', response.status);
+                console.log('Response OK:', response.ok);
+
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Supabase REST insert error:', response.status, errorText);
+                    console.error('=== SUPABASE ERROR ===');
+                    console.error('Status:', response.status);
+                    console.error('Error text:', errorText);
                     console.error('Full response:', response);
+                    alert(`❌ Gagal menyimpan ke Supabase:\nStatus: ${response.status}\nError: ${errorText}\n\nCek console browser (F12) untuk detail.`);
                     return false;
                 }
 
-                console.log('Supabase insert successful');
+                const responseData = await response.text();
+                console.log('=== SUPABASE SUCCESS ===');
+                console.log('Response data:', responseData);
+                console.log('Data berhasil disimpan ke Supabase!');
                 return true;
             } catch (error) {
-                console.error('Supabase REST insert exception:', error);
+                console.error('=== SUPABASE EXCEPTION ===');
+                console.error('Error:', error);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                alert(`❌ Error koneksi Supabase:\n${error.message}\n\nCek console browser (F12) untuk detail.`);
                 return false;
             }
         }
