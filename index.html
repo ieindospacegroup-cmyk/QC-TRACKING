@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ERP QC dan Tracking - Manufaktur</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -1816,6 +1817,10 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3dXdwemZwa2tsd255a3JoaGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2ODIzMTcsImV4cCI6MjA5NTI1ODMxN30.0AVx_j0E1e_7T2fYhJ_C0zYeYfwOmCdvYhyDQ60aa-U';
         const SUPABASE_TABLE = 'qc_history';
 
+        // Initialize Supabase client for realtime
+        let supabaseClient = null;
+        let realtimeSubscription = null;
+
         function isSupabaseConfigured() {
             return (
                 typeof SUPABASE_URL === 'string' &&
@@ -1829,6 +1834,87 @@
                 !SUPABASE_URL.includes('YOUR_SUPABASE_URL') &&
                 !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY')
             );
+        }
+
+        // Initialize Supabase client for realtime
+        function initSupabaseClient() {
+            if (!isSupabaseConfigured()) {
+                console.warn('Supabase belum dikonfigurasi. Realtime tidak akan aktif.');
+                return null;
+            }
+
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('Supabase client initialized for realtime');
+                return supabaseClient;
+            } catch (error) {
+                console.error('Gagal menginisialisasi Supabase client:', error);
+                return null;
+            }
+        }
+
+        // Setup realtime subscription untuk qc_history table
+        async function setupRealtimeSubscription() {
+            if (!supabaseClient) {
+                console.warn('Supabase client belum diinisialisasi. Tidak bisa setup realtime.');
+                return;
+            }
+
+            try {
+                // Subscribe ke semua perubahan pada tabel qc_history
+                realtimeSubscription = supabaseClient
+                    .channel('qc_history_changes')
+                    .on('postgres_changes',
+                        {
+                            event: '*', // Listen ke INSERT, UPDATE, DELETE
+                            schema: 'public',
+                            table: SUPABASE_TABLE
+                        },
+                        (payload) => {
+                            console.log('Realtime change detected:', payload);
+                            // Auto refresh data saat ada perubahan (silent mode)
+                            loadFromSupabase(true);
+                        }
+                    )
+                    .subscribe((status) => {
+                        if (status === 'SUBSCRIBED') {
+                            console.log('Realtime subscription aktif untuk tabel qc_history');
+                            // Update status di UI
+                            updateRealtimeStatus(true);
+                        } else if (status === 'CLOSED') {
+                            console.log('Realtime subscription ditutup');
+                            updateRealtimeStatus(false);
+                        } else {
+                            console.log('Realtime subscription status:', status);
+                        }
+                    });
+            } catch (error) {
+                console.error('Gagal setup realtime subscription:', error);
+                updateRealtimeStatus(false);
+            }
+        }
+
+        // Update status realtime di UI
+        function updateRealtimeStatus(isActive) {
+            const statusElement = document.getElementById('supabaseStatus');
+            if (!statusElement) return;
+
+            if (isActive) {
+                statusElement.textContent = 'Supabase aktif: Realtime listener aktif. Data akan otomatis refresh.';
+                statusElement.style.color = '#2e7d32';
+            } else {
+                statusElement.textContent = 'Supabase aktif: klik untuk sinkronisasi data lokal ke Supabase.';
+                statusElement.style.color = '#2e7d32';
+            }
+        }
+
+        // Cleanup realtime subscription
+        function cleanupRealtimeSubscription() {
+            if (realtimeSubscription) {
+                supabaseClient.removeChannel(realtimeSubscription);
+                realtimeSubscription = null;
+                console.log('Realtime subscription dibersihkan');
+            }
         }
 
         async function saveToSupabase(qcData) {
@@ -1922,9 +2008,9 @@
             alert(`Sinkronisasi selesai: ${successCount} dari ${stored.length} item tersimpan di Supabase.`);
         }
 
-        async function loadFromSupabase() {
+        async function loadFromSupabase(silent = false) {
             if (!isSupabaseConfigured()) {
-                alert('Supabase belum dikonfigurasi.');
+                if (!silent) alert('Supabase belum dikonfigurasi.');
                 return;
             }
 
@@ -1945,7 +2031,7 @@
                     const errorText = await response.text();
                     console.error('Supabase REST fetch error:', response.status, errorText);
                     console.error('Full response:', response);
-                    alert('Gagal mengambil data dari Supabase.');
+                    if (!silent) alert('Gagal mengambil data dari Supabase.');
                     return;
                 }
 
@@ -1953,7 +2039,7 @@
                 console.log('Supabase data received:', data);
 
                 if (!Array.isArray(data)) {
-                    alert('Format data dari Supabase tidak valid.');
+                    if (!silent) alert('Format data dari Supabase tidak valid.');
                     return;
                 }
 
@@ -1980,10 +2066,10 @@
 
                 // Update UI
                 loadTrackingData();
-                alert(`Data berhasil dimuat dari Supabase: ${qcHistory.length} item.`);
+                if (!silent) alert(`Data berhasil dimuat dari Supabase: ${qcHistory.length} item.`);
             } catch (error) {
                 console.error('Error loading from Supabase:', error);
-                alert('Terjadi error saat mengambil data dari Supabase.');
+                if (!silent) alert('Terjadi error saat mengambil data dari Supabase.');
             }
         }
 
@@ -2001,7 +2087,11 @@
             loadFromStorage();
             updateSupabaseUI();
             populateUsernameDropdown();
-            
+
+            // Initialize Supabase realtime
+            initSupabaseClient();
+            setupRealtimeSubscription();
+
             // Attach tracking search handlers
             const trackingInput = document.getElementById('trackingSearchInput');
             if (trackingInput) {
