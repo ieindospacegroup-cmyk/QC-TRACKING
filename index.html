@@ -1818,18 +1818,26 @@
 
         // Fungsi untuk menentukan nama tabel berdasarkan nomor JO
         function getTableNameByJoNumber(joNumber) {
-            if (!joNumber) return 'qc_history';
+            console.log('getTableNameByJoNumber called with:', joNumber);
+
+            if (!joNumber) {
+                console.log('No joNumber provided, using default table: qc_history');
+                return 'qc_history';
+            }
 
             // Cek pattern TCV/JO/26- untuk tahun 2026
             if (joNumber.includes('TCV/JO/26-')) {
+                console.log('Pattern TCV/JO/26- detected, using table: qc_history_tahun_2026');
                 return 'qc_history_tahun_2026';
             }
             // Cek pattern TCV/JO/27- untuk tahun 2027
             else if (joNumber.includes('TCV/JO/27-')) {
+                console.log('Pattern TCV/JO/27- detected, using table: qc_history_tahun_2027');
                 return 'qc_history_tahun_2027';
             }
             // Default table untuk JO lain
             else {
+                console.log('No pattern matched, using default table: qc_history');
                 return 'qc_history';
             }
         }
