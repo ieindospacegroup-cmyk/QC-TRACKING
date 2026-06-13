@@ -1815,7 +1815,24 @@
         const SUPABASE_URL = 'https://cwuwpzfpkklwnykrhhkn.supabase.co';
         const SUPABASE_REST_URL = 'https://cwuwpzfpkklwnykrhhkn.supabase.co/rest/v1';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3dXdwemZwa2tsd255a3JoaGtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2ODIzMTcsImV4cCI6MjA5NTI1ODMxN30.0AVx_j0E1e_7T2fYhJ_C0zYeYfwOmCdvYhyDQ60aa-U';
-        const SUPABASE_TABLE = 'qc_history';
+
+        // Fungsi untuk menentukan nama tabel berdasarkan nomor JO
+        function getTableNameByJoNumber(joNumber) {
+            if (!joNumber) return 'qc_history';
+
+            // Cek pattern TCV/JO/26- untuk tahun 2026
+            if (joNumber.includes('TCV/JO/26-')) {
+                return 'qc_history_tahun_2026';
+            }
+            // Cek pattern TCV/JO/27- untuk tahun 2027
+            else if (joNumber.includes('TCV/JO/27-')) {
+                return 'qc_history_tahun_2027';
+            }
+            // Default table untuk JO lain
+            else {
+                return 'qc_history';
+            }
+        }
 
         // Initialize Supabase client for realtime
         let supabaseClient = null;
@@ -1853,7 +1870,7 @@
             }
         }
 
-        // Setup realtime subscription untuk qc_history table
+        // Setup realtime subscription untuk semua qc_history tables
         async function setupRealtimeSubscription() {
             if (!supabaseClient) {
                 console.warn('Supabase client belum diinisialisasi. Tidak bisa setup realtime.');
@@ -1861,24 +1878,49 @@
             }
 
             try {
-                // Subscribe ke semua perubahan pada tabel qc_history
+                // Subscribe ke semua perubahan pada semua tabel qc_history
+                const tables = ['qc_history', 'qc_history_tahun_2026', 'qc_history_tahun_2027'];
                 realtimeSubscription = supabaseClient
-                    .channel('qc_history_changes')
+                    .channel('qc_history_all_changes')
                     .on('postgres_changes',
                         {
                             event: '*', // Listen ke INSERT, UPDATE, DELETE
                             schema: 'public',
-                            table: SUPABASE_TABLE
+                            table: tables[0]
                         },
                         (payload) => {
-                            console.log('Realtime change detected:', payload);
+                            console.log('Realtime change detected on qc_history:', payload);
+                            // Auto refresh data saat ada perubahan (silent mode)
+                            loadFromSupabase(true);
+                        }
+                    )
+                    .on('postgres_changes',
+                        {
+                            event: '*', // Listen ke INSERT, UPDATE, DELETE
+                            schema: 'public',
+                            table: tables[1]
+                        },
+                        (payload) => {
+                            console.log('Realtime change detected on qc_history_tahun_2026:', payload);
+                            // Auto refresh data saat ada perubahan (silent mode)
+                            loadFromSupabase(true);
+                        }
+                    )
+                    .on('postgres_changes',
+                        {
+                            event: '*', // Listen ke INSERT, UPDATE, DELETE
+                            schema: 'public',
+                            table: tables[2]
+                        },
+                        (payload) => {
+                            console.log('Realtime change detected on qc_history_tahun_2027:', payload);
                             // Auto refresh data saat ada perubahan (silent mode)
                             loadFromSupabase(true);
                         }
                     )
                     .subscribe((status) => {
                         if (status === 'SUBSCRIBED') {
-                            console.log('Realtime subscription aktif untuk tabel qc_history');
+                            console.log('Realtime subscription aktif untuk semua tabel qc_history');
                             // Update status di UI
                             updateRealtimeStatus(true);
                         } else if (status === 'CLOSED') {
@@ -1923,6 +1965,9 @@
                 return false;
             }
 
+            // Tentukan nama tabel berdasarkan nomor JO
+            const tableName = getTableNameByJoNumber(qcData.joNumber);
+
             const payload = [{
                 username: qcData.username,
                 location: qcData.location,
@@ -1940,8 +1985,9 @@
             }];
 
             try {
-                const url = `${SUPABASE_REST_URL}/${SUPABASE_TABLE}`;
+                const url = `${SUPABASE_REST_URL}/${tableName}`;
                 console.log('Supabase POST URL:', url);
+                console.log('Table name:', tableName);
                 console.log('Payload:', payload);
 
                 const response = await fetch(url, {
@@ -2015,36 +2061,42 @@
             }
 
             try {
-                const url = `${SUPABASE_REST_URL}/${SUPABASE_TABLE}`;
-                console.log('Supabase GET URL:', url);
+                // Load data dari semua tabel yang mungkin
+                const tables = ['qc_history', 'qc_history_tahun_2026', 'qc_history_tahun_2027'];
+                let allData = [];
 
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                for (const table of tables) {
+                    try {
+                        const url = `${SUPABASE_REST_URL}/${table}`;
+                        console.log('Supabase GET URL:', url);
+
+                        const response = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': SUPABASE_ANON_KEY,
+                                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                            }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (Array.isArray(data)) {
+                                console.log(`Data dari tabel ${table}:`, data.length, 'item');
+                                allData = allData.concat(data);
+                            }
+                        } else {
+                            console.warn(`Gagal mengambil data dari tabel ${table}:`, response.status);
+                        }
+                    } catch (error) {
+                        console.warn(`Error mengambil data dari tabel ${table}:`, error);
                     }
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Supabase REST fetch error:', response.status, errorText);
-                    console.error('Full response:', response);
-                    if (!silent) alert('Gagal mengambil data dari Supabase.');
-                    return;
                 }
 
-                const data = await response.json();
-                console.log('Supabase data received:', data);
-
-                if (!Array.isArray(data)) {
-                    if (!silent) alert('Format data dari Supabase tidak valid.');
-                    return;
-                }
+                console.log('Total data dari semua tabel:', allData.length);
 
                 // Map Supabase data ke format qcHistory
-                qcHistory = data.map(item => ({
+                qcHistory = allData.map(item => ({
                     id: item.id,
                     createdAt: item.created_at ? new Date(item.created_at).getTime() : Date.now(),
                     username: item.username || '',
