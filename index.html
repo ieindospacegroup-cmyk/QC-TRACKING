@@ -2013,6 +2013,8 @@
                     const errorText = await response.text();
                     console.error('Supabase REST insert error:', response.status, errorText);
                     console.error('Full response:', response);
+                    console.error('Table yang dicoba:', tableName);
+                    alert(`Gagal backup ke Supabase! Error: ${response.status} - ${errorText}\nTabel: ${tableName}\nPastikan tabel ${tableName} sudah ada di Supabase.`);
                     return false;
                 }
 
