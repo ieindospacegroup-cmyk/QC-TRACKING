@@ -2887,15 +2887,38 @@
                         }).join('');
 
                         const virtualEntriesHtml = (!stepList.length && virtualStepList.length)
-                            ? virtualStepList.map(step => `
-                                <div class="tracking-step-entry next-step">
-                                    <span class="tracking-step-status next-step">NEXT STEP</span>
-                                    <span class="tracking-step-detail">Dari: ${step.fromLocation || '-'}</span>
-                                    <span class="tracking-step-detail">Waktu: ${step.timestamp || '-'}</span>
-                                    <span class="tracking-step-detail">QTY: ${step.checkedQty || 0}</span>
-                                    <span class="tracking-step-detail">Serial number: ${step.serialNumber || '-'}</span>
-                                </div>
-                            `).join('')
+                            ? (() => {
+                                // Group by fromLocation
+                                const groupedByLocation = {};
+                                virtualStepList.forEach(step => {
+                                    const loc = step.fromLocation || '-';
+                                    if (!groupedByLocation[loc]) {
+                                        groupedByLocation[loc] = {
+                                            serialNumbers: [],
+                                            timestamps: [],
+                                            totalQty: 0
+                                        };
+                                    }
+                                    groupedByLocation[loc].serialNumbers.push(step.serialNumber || '-');
+                                    groupedByLocation[loc].timestamps.push(step.timestamp || '-');
+                                    groupedByLocation[loc].totalQty += (step.checkedQty || 0);
+                                });
+
+                                // Generate HTML for each location - FORMAT MULTI-LINE
+                                return Object.entries(groupedByLocation).map(([location, data]) => {
+                                    const serialTimeLines = data.serialNumbers.map((sn, i) =>
+                                        `<span class="tracking-step-detail" style="margin-left: 20px;">• ${sn} = ${data.timestamps[i]}</span>`
+                                    ).join('');
+                                    return `
+                                        <div class="tracking-step-entry next-step">
+                                            <span class="tracking-step-status next-step">NEXT STEP</span>
+                                            <span class="tracking-step-detail">Dari: ${location}</span>
+                                            ${serialTimeLines}
+                                            <span class="tracking-step-detail">Total QTY: ${data.totalQty}</span>
+                                        </div>
+                                    `;
+                                }).join('');
+                            })()
                             : '';
 
                         if (!entriesHtml && !virtualEntriesHtml) {
